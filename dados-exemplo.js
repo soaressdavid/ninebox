@@ -2,50 +2,50 @@ lo
 const contatosExemplo = [
   {
     id: 1001,
-    nome: "Prof. João Silva",
-    email: "joao.silva@universidade.edu",
-    tipo: "professor",
-    disciplina: "Engenharia de Software",
+    nome: "João Silva",
+    email: "joao.silva@empresa.com",
+    tipo: "gestor",
+    departamento: "Tecnologia",
     foto: null
   },
   {
     id: 1002,
-    nome: "Prof. Maria Santos",
-    email: "maria.santos@universidade.edu",
-    tipo: "professor",
-    disciplina: "Banco de Dados",
+    nome: "Maria Santos",
+    email: "maria.santos@empresa.com",
+    tipo: "gestor",
+    departamento: "Recursos Humanos",
     foto: null
   },
   {
     id: 1003,
     nome: "Ana Costa",
-    email: "ana.costa@email.com",
-    tipo: "estagiario",
-    matricula: "2021001",
+    email: "ana.costa@empresa.com",
+    tipo: "colaborador",
+    cargo: "Desenvolvedora",
     foto: null
   },
   {
     id: 1004,
     nome: "Carlos Oliveira",
-    email: "carlos.oliveira@email.com",
-    tipo: "estagiario",
-    matricula: "2021002",
+    email: "carlos.oliveira@empresa.com",
+    tipo: "colaborador",
+    cargo: "Analista",
     foto: null
   },
   {
     id: 1005,
-    nome: "Prof. Pedro Lima",
-    email: "pedro.lima@universidade.edu",
-    tipo: "professor",
-    disciplina: "Algoritmos",
+    nome: "Pedro Lima",
+    email: "pedro.lima@empresa.com",
+    tipo: "gestor",
+    departamento: "Operações",
     foto: null
   },
   {
     id: 1006,
     nome: "Beatriz Ferreira",
-    email: "beatriz.ferreira@email.com",
-    tipo: "estagiario",
-    matricula: "2021003",
+    email: "beatriz.ferreira@empresa.com",
+    tipo: "colaborador",
+    cargo: "Designer",
     foto: null
   }
 ];
@@ -57,8 +57,8 @@ localStorage.setItem('contatos', JSON.stringify(contatosExemplo));
 const avaliacoesExemplo = [
   {
     id: 3001,
-    tipo: "professor",
-    avaliado: "Prof. João Silva",
+    tipo: "gestor",
+    avaliado: "João Silva",
     criterios: {
       pontualidade: 5,
       comunicacao: 4,
@@ -67,16 +67,16 @@ const avaliacoesExemplo = [
       equipe: 5
     },
     media: 4.6,
-    comentario: "Excelente professor, muito dedicado.",
+    comentario: "Excelente gestor, muito dedicado.",
     data: "26/04/2026"
   },
   {
     id: 3002,
-    tipo: "estagiario",
+    tipo: "colaborador",
     avaliado: "Ana Costa",
     criterios: {},
     media: null,
-    comentario: "Estagiária muito dedicada e pontual. Demonstra grande interesse em aprender e sempre busca feedback para melhorar. Sua comunicação é clara e ela se integra bem com a equipe.",
+    comentario: "Colaboradora muito dedicada e pontual. Demonstra grande interesse em aprender e sempre busca feedback para melhorar. Sua comunicação é clara e ela se integra bem com a equipe.",
     data: "26/04/2026",
     tipoAvaliacao: "comentario"
   }
@@ -90,18 +90,18 @@ const nineBoxExemplo = [
   {
     id: 2001,
     pessoaId: 1001,
-    tipo: "professor",
-    pessoa: "Prof. João Silva",
+    tipo: "gestor",
+    pessoa: "João Silva",
     performance: 3,
     potential: 2,
-    comentario: "Excelente professor, muito dedicado às aulas.",
+    comentario: "Excelente gestor, muito dedicado à equipe.",
     data: "27/04/2026",
     categoria: "Especialista"
   },
   {
     id: 2002,
     pessoaId: 1003,
-    tipo: "estagiario",
+    tipo: "colaborador",
     pessoa: "Ana Costa",
     performance: 2,
     potential: 3,
@@ -112,11 +112,11 @@ const nineBoxExemplo = [
   {
     id: 2003,
     pessoaId: 1002,
-    tipo: "professor",
-    pessoa: "Prof. Maria Santos",
+    tipo: "gestor",
+    pessoa: "Maria Santos",
     performance: 3,
     potential: 3,
-    comentario: "Professora excepcional com grande potencial de liderança.",
+    comentario: "Gestora excepcional com grande potencial de liderança.",
     data: "27/04/2026",
     categoria: "Superstar"
   }

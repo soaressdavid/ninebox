@@ -13,7 +13,7 @@ const CRITERIOS = [
 const notas = {};
 CRITERIOS.forEach(c => notas[c.key] = 0);
 
-let tipoAtual = 'professor';
+let tipoAtual = 'gestor';
 let filtroAtual = 'todos';
 let tipoSelecionado = null; // para a tela de seleção
 
@@ -45,7 +45,7 @@ function irParaFormulario() {
   document.getElementById('step-tipo').style.display = 'none';
   document.getElementById('step-form').style.display = 'block';
   document.getElementById('av-header-title').textContent =
-    tipoSelecionado === 'professor' ? 'Avaliar Professor' : 'Avaliar Estagiário';
+    tipoSelecionado === 'gestor' ? 'Avaliar Gestor' : 'Avaliar Colaborador';
 
   tipoAtual = tipoSelecionado;
   setTipo(tipoSelecionado);
@@ -72,7 +72,7 @@ function renderHistoricoFull() {
 
   let avaliacoes = getAvaliacoes();
   if (!isGestor()) {
-    avaliacoes = avaliacoes.filter(a => a.tipo !== 'professor');
+    avaliacoes = avaliacoes.filter(a => a.tipo !== 'gestor');
   }
   avaliacoes = avaliacoes.slice().reverse();
 
@@ -82,9 +82,9 @@ function renderHistoricoFull() {
   }
 
   container.innerHTML = avaliacoes.map(a => {
-    const tipoLabel = a.tipo === 'professor' ? 'Professor' : 'Estagiário';
+    const tipoLabel = a.tipo === 'gestor' ? 'Gestor' : 'Colaborador';
 
-    if (a.tipo === 'estagiario' && a.tipoAvaliacao === 'comentario') {
+    if (a.tipo === 'colaborador' && a.tipoAvaliacao === 'comentario') {
       return `
         <div class="av-item av-item-comentario-only">
           <div class="av-item-header">
@@ -119,7 +119,7 @@ function renderHistoricoFull() {
 }
 
 // =============================================
-// PERMISSÕES — só gestor/professor avalia estagiário
+// PERMISSÕES — só gestor avalia colaborador
 // =============================================
 function getUsuarioLogado() {
   const sessao = JSON.parse(localStorage.getItem('perfilLogado') || 'null');
@@ -129,39 +129,39 @@ function getUsuarioLogado() {
 
 function isGestor() {
   const user = getUsuarioLogado();
-  // Sem login = acesso total; professor ou gestor = pode avaliar estagiário
-  return !user || user.tipo === 'professor' || user.tipo === 'gestor';
+  // Sem login = acesso total; gestor = pode avaliar colaborador
+  return !user || user.tipo === 'gestor';
 }
 
 function aplicarPermissoes() {
-  // Ocultar botão de avaliar estagiário no toggle (formulário antigo)
-  const btnEstagiario = document.querySelector('.av-type-btn[data-type="estagiario"]');
-  if (btnEstagiario) {
+  // Ocultar botão de avaliar colaborador no toggle (formulário antigo)
+  const btnColaborador = document.querySelector('.av-type-btn[data-type="colaborador"]');
+  if (btnColaborador) {
     if (!isGestor()) {
-      btnEstagiario.style.display = 'none';
-      setTipo('professor');
-      const filtroProfessor = document.querySelector('.av-filtro[data-filtro="professor"]');
-      if (filtroProfessor) filtroProfessor.style.display = 'none';
+      btnColaborador.style.display = 'none';
+      setTipo('gestor');
+      const filtroGestor = document.querySelector('.av-filtro[data-filtro="gestor"]');
+      if (filtroGestor) filtroGestor.style.display = 'none';
       const filtroTodos = document.querySelector('.av-filtro[data-filtro="todos"]');
       if (filtroTodos) filtroTodos.style.display = 'none';
-      filtroAtual = 'estagiario';
+      filtroAtual = 'colaborador';
       document.querySelectorAll('.av-filtro').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.filtro === 'estagiario');
+        btn.classList.toggle('active', btn.dataset.filtro === 'colaborador');
       });
     } else {
-      btnEstagiario.style.display = '';
+      btnColaborador.style.display = '';
     }
   }
 
-  // Ocultar card de estagiário na tela de seleção
-  const cardEstagiario = document.getElementById('card-estagiario');
-  if (cardEstagiario && !isGestor()) {
-    cardEstagiario.style.display = 'none';
+  // Ocultar card de colaborador na tela de seleção
+  const cardColaborador = document.getElementById('card-colaborador');
+  if (cardColaborador && !isGestor()) {
+    cardColaborador.style.display = 'none';
   }
 }
 
 // =============================================
-// TIPO (professor / estagiário)
+// TIPO (gestor / colaborador)
 // =============================================
 function setTipo(tipo) {
   tipoAtual = tipo;
@@ -171,28 +171,28 @@ function setTipo(tipo) {
   });
 
   const label = document.getElementById('avaliado-label');
-  if (label) label.textContent = tipo === 'professor' ? 'Professor' : 'Estagiário';
+  if (label) label.textContent = tipo === 'gestor' ? 'Gestor' : 'Colaborador';
 
-  const criteriosProfessor = document.getElementById('criterios-professor');
-  const criteriosEstagiario = document.getElementById('criterios-estagiario');
+  const criteriosGestor = document.getElementById('criterios-gestor');
+  const criteriosColaborador = document.getElementById('criterios-colaborador');
   const mediaBox = document.getElementById('media-box');
   const comentarioLabel = document.getElementById('comentario-label');
   const comentarioField = document.getElementById('comentario');
   const btnText = document.getElementById('btn-text');
 
-  if (tipo === 'estagiario') {
-    if (criteriosProfessor) criteriosProfessor.style.display = 'none';
-    if (criteriosEstagiario) criteriosEstagiario.style.display = 'block';
+  if (tipo === 'colaborador') {
+    if (criteriosGestor) criteriosGestor.style.display = 'none';
+    if (criteriosColaborador) criteriosColaborador.style.display = 'block';
     if (mediaBox) mediaBox.style.display = 'none';
-    if (comentarioLabel) comentarioLabel.innerHTML = 'Comentário sobre o estagiário <span class="av-obrigatorio">(obrigatório)</span>';
+    if (comentarioLabel) comentarioLabel.innerHTML = 'Comentário sobre o colaborador <span class="av-obrigatorio">(obrigatório)</span>';
     if (comentarioField) {
-      comentarioField.placeholder = 'Descreva o desempenho do estagiário nos aspectos acima. Seja específico e construtivo...';
+      comentarioField.placeholder = 'Descreva o desempenho do colaborador nos aspectos acima. Seja específico e construtivo...';
       comentarioField.rows = 6;
     }
     if (btnText) btnText.textContent = 'Enviar Comentário';
   } else {
-    if (criteriosProfessor) criteriosProfessor.style.display = 'block';
-    if (criteriosEstagiario) criteriosEstagiario.style.display = 'none';
+    if (criteriosGestor) criteriosGestor.style.display = 'block';
+    if (criteriosColaborador) criteriosColaborador.style.display = 'none';
     if (mediaBox) mediaBox.style.display = 'flex';
     if (comentarioLabel) comentarioLabel.innerHTML = 'Comentário <span class="av-opcional">(opcional)</span>';
     if (comentarioField) {
@@ -216,7 +216,7 @@ function popularSelect() {
   const filtrados = tipoAtual ? contatos.filter(c => c.tipo === tipoAtual) : contatos;
 
   if (filtrados.length === 0) {
-    select.innerHTML = `<option value="">Nenhum ${tipoAtual === 'professor' ? 'professor' : 'estagiário'} cadastrado</option>`;
+    select.innerHTML = `<option value="">Nenhum ${tipoAtual === 'gestor' ? 'gestor' : 'colaborador'} cadastrado</option>`;
     return;
   }
 
@@ -263,21 +263,21 @@ function atualizarMedia() {
 }
 
 // =============================================
-// SALVAR ESTAGIÁRIO — só comentário
+// SALVAR COLABORADOR — só comentário
 // =============================================
-function salvarEstagiario() {
+function salvarColaborador() {
   const select = document.getElementById('avaliado');
   const comentario = document.getElementById('comentario');
   if (!select || !comentario) return;
 
   if (!select.value) {
-    showToast('Selecione o estagiário a ser avaliado.', 'error');
+    showToast('Selecione o colaborador a ser avaliado.', 'error');
     return;
   }
 
   const texto = comentario.value.trim();
   if (!texto) {
-    showToast('O comentário é obrigatório para avaliação de estagiários.', 'error');
+    showToast('O comentário é obrigatório para avaliação de colaboradores.', 'error');
     return;
   }
   if (texto.length < 20) {
@@ -291,7 +291,7 @@ function salvarEstagiario() {
   const avaliacoes = getAvaliacoes();
   avaliacoes.push({
     id: Date.now(),
-    tipo: 'estagiario',
+    tipo: 'colaborador',
     avaliado: avaliado ? avaliado.nome : 'Desconhecido',
     criterios: {},
     media: null,
@@ -308,7 +308,7 @@ function salvarEstagiario() {
 }
 
 // =============================================
-// SALVAR PROFESSOR — com estrelas
+// SALVAR GESTOR — com estrelas
 // =============================================
 function _salvar(tipo) {
   const select = document.getElementById('avaliado');
@@ -365,8 +365,8 @@ function _salvar(tipo) {
 // SALVAR UNIFICADO
 // =============================================
 function salvarAvaliacaoUnificada() {
-  if (tipoAtual === 'estagiario') {
-    salvarEstagiario();
+  if (tipoAtual === 'colaborador') {
+    salvarColaborador();
   } else {
     _salvar(tipoAtual);
   }
@@ -399,9 +399,9 @@ function renderHistorico() {
 
   let avaliacoes = getAvaliacoes();
 
-  // Estagiário logado não vê avaliações de professores
+  // Colaborador logado não vê avaliações de gestores
   if (!isGestor()) {
-    avaliacoes = avaliacoes.filter(a => a.tipo !== 'professor');
+    avaliacoes = avaliacoes.filter(a => a.tipo !== 'gestor');
   }
 
   if (filtroAtual !== 'todos') {
@@ -415,9 +415,9 @@ function renderHistorico() {
   }
 
   container.innerHTML = avaliacoes.map(a => {
-    const tipoLabel = a.tipo === 'professor' ? 'Professor' : 'Estagiário';
+    const tipoLabel = a.tipo === 'gestor' ? 'Gestor' : 'Colaborador';
 
-    if (a.tipo === 'estagiario' && a.tipoAvaliacao === 'comentario') {
+    if (a.tipo === 'colaborador' && a.tipoAvaliacao === 'comentario') {
       return `
         <div class="av-item av-item-comentario-only">
           <div class="av-item-header">
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
       popularSelect();
       initAllStars();
     } else {
-      setTipo('professor');
+      setTipo('gestor');
       initAllStars();
     }
     renderHistorico();

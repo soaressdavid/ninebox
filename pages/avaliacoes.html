@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Avaliações — Portal de Estágio</title>
+  <title>Avaliações — Portal de Gestão de Pessoas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -51,18 +51,18 @@
 
       <div class="av-tipo-cards">
 
-        <div class="av-tipo-card" data-tipo="professor" onclick="selecionarTipo('professor')">
-          <div class="av-tipo-icon">
-            <i class="fa-solid fa-chalkboard-user"></i>
-          </div>
-          <span>Avaliação de Professor</span>
-        </div>
-
-        <div class="av-tipo-card" data-tipo="estagiario" onclick="selecionarTipo('estagiario')" id="card-estagiario">
+        <div class="av-tipo-card" data-tipo="gestor" onclick="selecionarTipo('gestor')">
           <div class="av-tipo-icon">
             <i class="fa-solid fa-user-tie"></i>
           </div>
-          <span>Avaliação de Estagiário</span>
+          <span>Avaliação de Gestor</span>
+        </div>
+
+        <div class="av-tipo-card" data-tipo="colaborador" onclick="selecionarTipo('colaborador')" id="card-colaborador">
+          <div class="av-tipo-icon">
+            <i class="fa-solid fa-users"></i>
+          </div>
+          <span>Avaliação de Colaborador</span>
         </div>
 
         <div class="av-tipo-card" data-tipo="historico" onclick="selecionarTipo('historico')">
@@ -91,14 +91,14 @@
 
         <!-- SELEÇÃO DE PESSOA -->
         <div class="av-field">
-          <label for="avaliado" id="avaliado-label">Professor</label>
+          <label for="avaliado" id="avaliado-label">Gestor</label>
           <select id="avaliado">
             <option value="">Selecione...</option>
           </select>
         </div>
 
-        <!-- CRITÉRIOS PROFESSOR -->
-        <div class="av-criterios" id="criterios-professor">
+        <!-- CRITÉRIOS GESTOR -->
+        <div class="av-criterios" id="criterios-gestor">
           <p class="av-section-title">Critérios de Avaliação</p>
           <div class="av-criterio">
             <span class="av-criterio-label"><i class="fa-regular fa-clock"></i> Pontualidade</span>
@@ -122,10 +122,10 @@
           </div>
         </div>
 
-        <!-- ASPECTOS ESTAGIÁRIO -->
-        <div class="av-criterios-estagiario" id="criterios-estagiario" style="display:none">
+        <!-- ASPECTOS COLABORADOR -->
+        <div class="av-criterios-colaborador" id="criterios-colaborador" style="display:none">
           <p class="av-section-title">Aspectos para Comentar</p>
-          <div class="av-aspecto"><span class="av-aspecto-label"><i class="fa-regular fa-clock"></i> Pontualidade</span><p class="av-aspecto-desc">Como tem sido a pontualidade do estagiário?</p></div>
+          <div class="av-aspecto"><span class="av-aspecto-label"><i class="fa-regular fa-clock"></i> Pontualidade</span><p class="av-aspecto-desc">Como tem sido a pontualidade do colaborador?</p></div>
           <div class="av-aspecto"><span class="av-aspecto-label"><i class="fa-regular fa-comments"></i> Comunicação</span><p class="av-aspecto-desc">Como é a comunicação e clareza nas interações?</p></div>
           <div class="av-aspecto"><span class="av-aspecto-label"><i class="fa-solid fa-code"></i> Desempenho Técnico</span><p class="av-aspecto-desc">Como está o desenvolvimento técnico e aprendizado?</p></div>
           <div class="av-aspecto"><span class="av-aspecto-label"><i class="fa-solid fa-bolt"></i> Proatividade</span><p class="av-aspecto-desc">Demonstra iniciativa e busca por soluções?</p></div>
@@ -141,7 +141,7 @@
         <!-- COMENTÁRIO -->
         <div class="av-field">
           <label for="comentario" id="comentario-label">Comentário <span class="av-opcional">(opcional)</span></label>
-          <textarea id="comentario" placeholder="Descreva sua avaliação..."></textarea>
+          <textarea id="comentario" placeholder="Descreva sua avaliação..." rows="3"></textarea>
         </div>
 
         <div style="display:flex;gap:10px;margin-top:4px">
@@ -181,8 +181,8 @@
           <p class="av-section-title">Histórico de Avaliações</p>
           <div class="av-filtros">
             <button class="av-filtro active" data-filtro="todos" onclick="filtrar('todos')">Todos</button>
-            <button class="av-filtro" data-filtro="professor" onclick="filtrar('professor')">Professores</button>
-            <button class="av-filtro" data-filtro="estagiario" onclick="filtrar('estagiario')">Estagiários</button>
+            <button class="av-filtro" data-filtro="gestor" onclick="filtrar('gestor')">Gestores</button>
+            <button class="av-filtro" data-filtro="colaborador" onclick="filtrar('colaborador')">Colaboradores</button>
           </div>
         </div>
         <div id="historico-lista-full">

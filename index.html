@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portal de Estágio</title>
+  <title>Portal de Gestão de Pessoas</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
 <body>
 
 <header>
-  <h2>Portal de Estágio</h2>
+  <h2>Portal de Gestão de Pessoas</h2>
   <button id="dark-mode-btn" onclick="toggleDarkMode()" title="Modo escuro">
     <i class="fa-solid fa-moon"></i>
   </button>
@@ -164,8 +164,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const avaliacoes = getAvaliacoes();
   const nineBox = JSON.parse(localStorage.getItem('nineBoxAvaliacoes') || '[]');
 
-  const professores = contatos.filter(c => c.tipo === 'professor').length;
-  const estagiarios = contatos.filter(c => c.tipo === 'estagiario').length;
+  const gestores = contatos.filter(c => c.tipo === 'gestor').length;
+  const colaboradores = contatos.filter(c => c.tipo === 'colaborador').length;
   const totalAv = avaliacoes.length;
   const totalNB = nineBox.length;
 
@@ -175,9 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Mensagem de boas-vindas para novos usuários
       container.innerHTML = `
         <div class="dash-welcome">
-          <i class="fa-solid fa-graduation-cap"></i>
-          <h3>Bem-vindo ao Portal de Estágio!</h3>
-          <p>Comece cadastrando professores e estagiários para usar o sistema.</p>
+          <i class="fa-solid fa-users"></i>
+          <h3>Bem-vindo ao Portal de Gestão de Pessoas!</h3>
+          <p>Comece cadastrando gestores e colaboradores para usar o sistema.</p>
           <a href="pages/cadastrar.html" class="dash-welcome-btn">
             <i class="fa-solid fa-user-plus"></i> Cadastrar primeira pessoa
           </a>
@@ -185,12 +185,12 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
       container.innerHTML = `
         <div class="dash-stat">
-          <i class="fa-solid fa-chalkboard-user"></i>
-          <div><span class="dash-stat-val">${professores}</span><span class="dash-stat-label">Professores</span></div>
+          <i class="fa-solid fa-user-tie"></i>
+          <div><span class="dash-stat-val">${gestores}</span><span class="dash-stat-label">Gestores</span></div>
         </div>
         <div class="dash-stat">
-          <i class="fa-solid fa-user-tie"></i>
-          <div><span class="dash-stat-val">${estagiarios}</span><span class="dash-stat-label">Estagiários</span></div>
+          <i class="fa-solid fa-users"></i>
+          <div><span class="dash-stat-val">${colaboradores}</span><span class="dash-stat-label">Colaboradores</span></div>
         </div>
         <div class="dash-stat">
           <i class="fa-solid fa-star"></i>
@@ -215,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const pessoa = contatos.find(c => c.id === sessao.id);
     if (pessoa) {
       if (nomeEl) nomeEl.textContent = pessoa.nome;
-      if (tipoEl) tipoEl.textContent = pessoa.tipo === 'professor' ? 'Professor' : 'Estagiário';
+      if (tipoEl) tipoEl.textContent = pessoa.tipo === 'gestor' ? 'Gestor' : 'Colaborador';
       if (btnSair) btnSair.style.display = 'flex';
 
       if (avatarEl) {
