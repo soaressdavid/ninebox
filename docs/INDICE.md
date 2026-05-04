@@ -43,12 +43,12 @@
 
 ```
 docs/
-├── INDEX.md                    # Este arquivo
-├── START_HERE.md               # Comece aqui
+├── INDICE.md                   # Este arquivo
+├── COMECE_AQUI.md              # Comece aqui
 ├── BACKEND.md                  # Guia backend
 ├── FRONTEND.md                 # Guia frontend
 ├── GUIA_COMPLETO.md            # Tutorial do zero
-├── CHANGELOG.md                # Atualizações
+├── ATUALIZACOES.md             # Atualizações
 │
 ├── backend/
 │   ├── ESTAGIARIO_1_USERS.md

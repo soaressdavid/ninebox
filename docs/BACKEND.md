@@ -2,6 +2,14 @@
 
 > Stack: Node.js + Express + Prisma + Supabase + JWT + Joi
 
+## Primeira vez aqui?
+
+**Se você não sabe por onde começar**, volte pro [`README.md`](../README.md) primeiro.
+
+**Se você já leu o README**, continue aqui para entender a arquitetura geral antes de ir pro seu doc específico.
+
+---
+
 ## Início Rápido
 
 ```bash

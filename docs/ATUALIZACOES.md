@@ -114,8 +114,8 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 #### Arquivos Principais
 - ✅ `docs/BACKEND.md` - Guia completo consolidado
 - ✅ `docs/FRONTEND.md` - Guia completo consolidado
-- ✅ `docs/START_HERE.md` - Ponto de entrada
-- ✅ `docs/INDEX.md` - Índice completo
+- ✅ `docs/COMECE_AQUI.md` - Ponto de entrada
+- ✅ `docs/INDICE.md` - Índice completo
 
 #### Arquivos Atualizados
 - ✅ `docs/backend/SCHEMA.prisma` - Schema completo com RA e admin
@@ -124,7 +124,7 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 - ✅ `docs/backend/ESTAGIARIO_3_COMPETENCIES.md` - Atualizado com permissões e rotas protegidas
 - ✅ `docs/BACKEND.md` - Guia completo consolidado
 - ✅ `docs/FRONTEND.md` - Guia completo consolidado
-- ✅ `docs/CHANGELOG.md` - Registro de todas as mudanças
+- ✅ `docs/ATUALIZACOES.md` - Registro de todas as mudanças
 - ✅ `README.md` - Atualizado com nova estrutura
 
 #### Arquivos Removidos (consolidados)
@@ -133,7 +133,7 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 - ❌ `docs/backend/ARQUITETURA.md` → consolidado em `BACKEND.md`
 - ❌ `docs/backend/PERMISSOES.md` → consolidado em `BACKEND.md`
 - ❌ `docs/frontend/README.md` → consolidado em `FRONTEND.md`
-- ❌ `docs/frontend/START_HERE.md` → consolidado em `FRONTEND.md`
+- ❌ `docs/frontend/COMECE_AQUI.md` → consolidado em `FRONTEND.md`
 
 ---
 

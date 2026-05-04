@@ -429,5 +429,5 @@ js/
 ## 📞 Ainda com dúvidas?
 
 - Revisar [README.md](README.md)
-- Revisar [START_HERE.md](START_HERE.md)
+- Revisar [COMECE_AQUI.md](COMECE_AQUI.md)
 - Perguntar ao time no daily standup

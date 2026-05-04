@@ -2,6 +2,14 @@
 
 > Stack: HTML + CSS + JavaScript (Vanilla)
 
+## Primeira vez aqui?
+
+**Se você não sabe por onde começar**, volte pro [`README.md`](../README.md) primeiro.
+
+**Se você já leu o README**, continue aqui para entender a arquitetura geral antes de ir pro seu doc específico.
+
+---
+
 ## Início Rápido
 
 ```bash
@@ -475,5 +483,4 @@ if (auth.isAuthenticated()) {
 
 - [Estagiário 1 - Infraestrutura](frontend/ESTAGIARIO_1_INFRAESTRUTURA.md)
 - [Estagiário 2 - Integração](frontend/ESTAGIARIO_2_INTEGRACAO.md)
-- [Início Rápido](frontend/START_HERE.md)
 - [FAQ](frontend/FAQ.md)
