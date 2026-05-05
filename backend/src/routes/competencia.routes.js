@@ -3,11 +3,7 @@ const competenciaController = require('../controllers/competencia.controller');
 
 const router = express.Router();
 
-router.get('/', competenciaController.listar);
-router.get('/:id', competenciaController.buscarPorId);
-router.post('/', competenciaController.criar);
-router.put('/:id', competenciaController.atualizar);
-router.delete('/:id', competenciaController.remover);
+router.get('/types', competenciaController.listarTipos);
 
 router.get(
   '/avaliacao/:evaluationId/colaboradores',
@@ -18,5 +14,12 @@ router.get(
   '/avaliacao/:evaluationId/gestor',
   competenciaController.listarPorAvaliacaoGestor
 );
+
+router.get('/', competenciaController.listar);
+router.get('/:id', competenciaController.buscarPorId);
+router.post('/', competenciaController.criar);
+router.put('/:id', competenciaController.atualizar);
+router.delete('/:id', competenciaController.remover);
+
 
 module.exports = router;

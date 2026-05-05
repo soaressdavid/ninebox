@@ -161,6 +161,31 @@ async function listarPorAvaliacaoGestor(evaluationId) {
   return competencias;
 }
 
+async function listarTipos() {
+  return [
+    {
+      value: 'desempenho',
+      label: 'Desempenho',
+      description: 'Competências relacionadas ao desempenho no trabalho',
+    },
+    {
+      value: 'comportamento',
+      label: 'Comportamento',
+      description: 'Competências comportamentais e atitudinais',
+    },
+    {
+      value: 'tecnica',
+      label: 'Técnica',
+      description: 'Competências técnicas e conhecimentos específicos',
+    },
+    {
+      value: 'lideranca',
+      label: 'Liderança',
+      description: 'Competências de liderança e gestão de pessoas',
+    },
+  ];
+}
+
 module.exports = {
   listar,
   buscarPorId,
@@ -169,4 +194,5 @@ module.exports = {
   remover,
   listarPorAvaliacaoColaboradores,
   listarPorAvaliacaoGestor,
+  listarTipos,
 };

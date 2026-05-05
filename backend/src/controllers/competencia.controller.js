@@ -90,6 +90,19 @@ async function listarPorAvaliacaoGestor(req, res, next) {
   }
 }
 
+async function listarTipos(req, res, next) {
+  try {
+    const tipos = await competenciaService.listarTipos();
+
+    return res.status(200).json({
+      success: true,
+      data: tipos,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listar,
   buscarPorId,
@@ -98,4 +111,5 @@ module.exports = {
   remover,
   listarPorAvaliacaoColaboradores,
   listarPorAvaliacaoGestor,
+  listarTipos,
 };
