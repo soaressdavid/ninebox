@@ -2,6 +2,32 @@
 
 ## NOVA ATUALIZAÇÃO - Documentação Frontend Completa (05/05/2026)
 
+### ✅ Arquivos Prisma Restaurados
+
+**Problema:**
+- Os arquivos `backend/prisma/schema.prisma` e `backend/prisma/seed.js` foram removidos acidentalmente
+
+**Solução:**
+- ✅ Recriado `backend/prisma/schema.prisma` com schema completo
+- ✅ Recriado `backend/prisma/seed.js` com dados de teste
+- ✅ Todos os modelos incluídos: User, Evaluation, NineBox, Competency
+- ✅ Enums atualizados: UserType (admin, gestor, colaborador) e TipoAvaliacao
+- ✅ Seed com admin, gestores, colaboradores, avaliações bidirecionais, Nine Box e competências
+
+**Para usar:**
+```bash
+# 1. Gerar cliente Prisma
+npx prisma generate
+
+# 2. Criar migration
+npx prisma migrate dev --name init
+
+# 3. Popular banco com dados de teste
+npm run prisma:seed
+```
+
+---
+
 ### ✅ Páginas de Avaliação 180° e 360° Documentadas
 
 **Problema Resolvido:**
