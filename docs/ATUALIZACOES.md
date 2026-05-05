@@ -6,25 +6,47 @@
 
 **Problema:**
 - Os arquivos `backend/prisma/schema.prisma` e `backend/prisma/seed.js` foram removidos acidentalmente
+- O arquivo `backend/package.json` também estava faltando
+- O arquivo `backend/.env.example` não existia
 
 **Solução:**
 - ✅ Recriado `backend/prisma/schema.prisma` com schema completo
 - ✅ Recriado `backend/prisma/seed.js` com dados de teste
+- ✅ Criado `backend/package.json` com scripts e dependências
+- ✅ Criado `backend/.env.example` com variáveis de ambiente
 - ✅ Todos os modelos incluídos: User, Evaluation, NineBox, Competency
 - ✅ Enums atualizados: UserType (admin, gestor, colaborador) e TipoAvaliacao
 - ✅ Seed com admin, gestores, colaboradores, avaliações bidirecionais, Nine Box e competências
 
-**Para usar:**
+**Para configurar o backend:**
 ```bash
-# 1. Gerar cliente Prisma
+# 1. Entrar no diretório backend
+cd backend
+
+# 2. Instalar dependências (se necessário)
+npm install
+
+# 3. Copiar .env.example para .env e configurar
+cp .env.example .env
+# Edite o .env com suas configurações de banco de dados
+
+# 4. Gerar cliente Prisma
 npx prisma generate
 
-# 2. Criar migration
+# 5. Criar migration
 npx prisma migrate dev --name init
 
-# 3. Popular banco com dados de teste
+# 6. Popular banco com dados de teste
 npm run prisma:seed
 ```
+
+**Credenciais de teste:**
+- Admin: RA 1000000, email: admin@empresa.com, senha: admin123
+- Gestor 1: RA 2021001, email: joao@empresa.com, senha: senha123
+- Gestor 2: RA 2021002, email: maria@empresa.com, senha: senha123
+- Colaborador 1: RA 2022001, email: ana@empresa.com, senha: senha123
+- Colaborador 2: RA 2022002, email: carlos@empresa.com, senha: senha123
+- Colaborador 3: RA 2022003, email: beatriz@empresa.com, senha: senha123
 
 ---
 
