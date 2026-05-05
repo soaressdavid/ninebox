@@ -1,0 +1,22 @@
+{
+  "name": "ninebox-api",
+  "version": "1.0.0",
+  "main": "legado.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon ./server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soaressdavid/nineboxv3.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/soaressdavid/nineboxv3/issues"
+  },
+  "homepage": "https://github.com/soaressdavid/nineboxv3#readme",
+  "description": ""
+}

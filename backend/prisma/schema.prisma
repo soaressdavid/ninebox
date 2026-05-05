@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model access_codes {
+  id           Int         @id @default(autoincrement())
+  code         String      @unique
+  evaluationId Int
+  employeeId   Int
+  used         Boolean     @default(false)
+  expiresAt    DateTime?
+  createdAt    DateTime    @default(now())
+  employees    employees   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  evaluations  evaluations @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@index([code])
+}
+
+model competencies {
+  id                      Int                       @id @default(autoincrement())
+  name                    String
+  type                    String
+  audience                CompetencyAudience        @default(EMPLOYEE)
+  description             String
+  levelIdeal              String
+  levelGood               String
+  levelAverage            String
+  levelNeedsImprovement   String
+  active                  Boolean                   @default(true)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  evaluation_competencies evaluation_competencies[]
+  responses               responses[]
+
+  @@unique([name, audience])
+}
+
+enum CompetencyAudience {
+  EMPLOYEE
+  MANAGER
+}
+
+model employees {
+  id                      Int                       @id @default(autoincrement())
+  managerId               Int
+  userId                  Int?                      @unique
+  name                    String
+  email                   String                    @unique
+  registrationId          String                    @unique
+  company                 String
+  active                  Boolean                   @default(true)
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  access_codes            access_codes[]
+  managers                managers                  @relation(fields: [managerId], references: [id])
+  users                   users?                    @relation(fields: [userId], references: [id])
+  evaluation_participants evaluation_participants[]
+
+  responsesGiven    responses[] @relation("ResponseResponderEmployee")
+  responsesReceived responses[] @relation("ResponseTargetEmployee")
+
+  @@index([managerId])
+}
+
+model evaluation_competencies {
+  id           Int                @id @default(autoincrement())
+  evaluationId Int
+  competencyId Int
+  audience     EvaluationAudience @default(EMPLOYEE)
+
+  competencies competencies @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+  evaluations  evaluations  @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, competencyId, audience])
+}
+
+enum EvaluationAudience {
+  EMPLOYEE
+  MANAGER
+}
+
+model evaluation_participants {
+  id           Int         @id @default(autoincrement())
+  evaluationId Int
+  employeeId   Int
+  employees    employees   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  evaluations  evaluations @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, employeeId])
+}
+
+model evaluations {
+  id                      Int                       @id @default(autoincrement())
+  managerId               Int
+  name                    String
+  type                    String                    @default("employee")
+  status                  String                    @default("draft")
+  company                 String
+  startDate               DateTime
+  endDate                 DateTime
+  description             String
+  closingText             String?
+  createdAt               DateTime                  @default(now())
+  updatedAt               DateTime                  @updatedAt
+  access_codes            access_codes[]
+  evaluation_competencies evaluation_competencies[]
+  evaluation_participants evaluation_participants[]
+  managers                managers                  @relation(fields: [managerId], references: [id])
+  responses               responses[]
+
+  @@index([managerId])
+}
+
+model managers {
+  id             Int           @id @default(autoincrement())
+  userId         Int           @unique
+  name           String
+  email          String        @unique
+  registrationId String        @unique
+  company        String
+  active         Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  employees      employees[]
+  evaluations    evaluations[]
+  users          users         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  responsesGiven    responses[] @relation("ResponseResponderManager")
+  responsesReceived responses[] @relation("ResponseTargetManager")
+}
+
+model responses {
+  id           Int @id @default(autoincrement())
+  evaluationId Int
+  competencyId Int
+
+  responderType ActorType
+  targetType    ActorType
+
+  responderEmployeeId Int?
+  responderManagerId  Int?
+
+  targetEmployeeId Int?
+  targetManagerId  Int?
+
+  score       Int
+  observation String?
+  submittedAt DateTime @default(now())
+
+  evaluations  evaluations  @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+  competencies competencies @relation(fields: [competencyId], references: [id], onDelete: Cascade)
+
+  responderEmployee employees? @relation("ResponseResponderEmployee", fields: [responderEmployeeId], references: [id], onDelete: SetNull)
+  responderManager  managers?  @relation("ResponseResponderManager", fields: [responderManagerId], references: [id], onDelete: SetNull)
+
+  targetEmployee employees? @relation("ResponseTargetEmployee", fields: [targetEmployeeId], references: [id], onDelete: SetNull)
+  targetManager  managers?  @relation("ResponseTargetManager", fields: [targetManagerId], references: [id], onDelete: SetNull)
+
+  @@unique([evaluationId, competencyId, responderEmployeeId, targetManagerId])
+  @@unique([evaluationId, competencyId, responderManagerId, targetEmployeeId])
+  @@index([evaluationId])
+  @@index([competencyId])
+  @@index([responderEmployeeId])
+  @@index([responderManagerId])
+  @@index([targetEmployeeId])
+  @@index([targetManagerId])
+}
+
+enum ActorType {
+  EMPLOYEE
+  MANAGER
+}
+
+model users {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique
+  password  String
+  role      String     @default("user")
+  active    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  employees employees?
+  managers  managers?
+}
