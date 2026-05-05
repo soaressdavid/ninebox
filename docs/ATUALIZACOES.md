@@ -1,18 +1,216 @@
-# Changelog - Atualizações da Documentação
+# Atualizações da Documentação
+
+## NOVA ATUALIZAÇÃO - Documentação Frontend Completa (05/05/2026)
+
+### ✅ Páginas de Avaliação 180° e 360° Documentadas
+
+**Problema Resolvido:**
+- As páginas `avaliacao-180.html` e `avaliacao-360.html` existiam no código mas não estavam documentadas
+- Os arquivos CSS `avaliacao-180.css` e `responder-180.css` não estavam listados na documentação
+
+**Solução Implementada:**
+- ✅ Adicionada seção 9.8 no `ESTAGIARIO_2_INTEGRACAO.md` - Avaliação 180°
+- ✅ Adicionada seção 9.9 no `ESTAGIARIO_2_INTEGRACAO.md` - Avaliação 360°
+- ✅ Estrutura de arquivos atualizada incluindo as novas páginas e CSS
+- ✅ Checklist de reescrita atualizado com as novas páginas
+
+**Avaliação 180° (pages/avaliacao-180.html):**
+- Sistema de avaliação estruturada onde gestores avaliam colaboradores
+- Permite vincular múltiplos avaliados e competências
+- Modais para seleção de avaliados e competências
+- Apenas gestor/admin podem criar
+- CSS específico: `avaliacao-180.css` e `responder-180.css`
+
+**Avaliação 360° (pages/avaliacao-360.html):**
+- Sistema exclusivo para administradores
+- Admin pode avaliar qualquer usuário (gestor ou colaborador)
+- Avaliações sempre anônimas
+- Critérios fixos com estrelas (1-5)
+- Histórico completo de avaliações 360°
+- CSS: reutiliza `avaliacoes.css`
+
+**Diferenças entre 180° e 360°:**
+- **180°**: Gestor → Colaborador (estruturada com competências)
+- **360°**: Admin → Qualquer usuário (critérios fixos)
+- **180°**: Múltiplos avaliados por vez
+- **360°**: Um avaliado por vez
+
+**Arquivos Atualizados:**
+- ✅ `docs/frontend/ESTAGIARIO_2_INTEGRACAO.md` - Seções 9.8 e 9.9 adicionadas
+- ✅ Estrutura de páginas atualizada
+- ✅ Checklist de reescrita atualizado
+
+---
+
+## NOVA ATUALIZAÇÃO - Documentação Frontend Completa (05/05/2026)
+
+### Documentação Frontend Finalizada
+
+**Estagiário 1 - Infraestrutura Completa:**
+- ✅ `docs/frontend/ESTAGIARIO_1_INFRAESTRUTURA.md` - Documentação completa e detalhada
+- ✅ Todos os módulos JavaScript base documentados (config, api, auth, validators, loading, toast, navbar)
+- ✅ Sistema de autenticação com JWT completamente documentado
+- ✅ Página de login completa com código HTML e JavaScript
+- ✅ Design system e CSS documentados
+- ✅ Checklist de entrega completo
+- ✅ Handoff para Estagiário 2 definido
+
+**Estagiário 2 - Integração com Backend:**
+- ✅ `docs/frontend/ESTAGIARIO_2_INTEGRACAO.md` - Mantido atualizado
+- ✅ Regras de integração com API documentadas
+- ✅ Sistema de avaliações anônimas e bidirecionais documentado
+- ✅ Nine Box, Competências e Relatórios documentados
+- ✅ Padrões de implementação (loading, erro, sessão) documentados
+- ✅ Checklist de reescrita do legado completo
+
+**Estrutura Criada:**
+```
+frontend/
+├── css/
+│   └── style.css (design system completo)
+├── js/
+│   ├── config.js          ← Configurações globais
+│   ├── api.js             ← Client HTTP com todos endpoints
+│   ├── auth.js            ← Autenticação e permissões
+│   ├── validators.js      ← Validações reutilizáveis
+│   ├── navbar.js          ← Navegação e dark mode
+│   └── components/
+│       ├── loading.js     ← Spinner global
+│       └── toast.js       ← Notificações
+└── pages/
+    └── login.html         ← Página de login completa
+```
+
+**Módulos Documentados:**
+
+1. **config.js** - Configurações globais (API URL, keys do localStorage)
+2. **api.js** - Client HTTP centralizado com:
+   - Tratamento automático de erros (401, 403, rede)
+   - Loading automático
+   - Toast de erro automático
+   - Todos os endpoints mapeados (users, evaluations, nineBox, competencies, reports)
+3. **auth.js** - Sistema de autenticação com:
+   - Gerenciamento de token e usuário
+   - Funções de permissão (isAdmin, isGestor, isColaborador, isGestorOrAdmin)
+   - Proteção de rotas (requireAuth, requireRole)
+   - Atualização do header com dados do usuário
+4. **validators.js** - Validações com:
+   - Email (qualquer domínio válido)
+   - RA (5-10 caracteres)
+   - Nome, senha, comentário
+   - Validação inline de formulários
+   - Funções de erro de campo
+5. **loading.js** - Spinner global com contador
+6. **toast.js** - Notificações (success, error, info, warning)
+7. **navbar.js** - Navegação com:
+   - Dark mode persistente
+   - Controle de visibilidade por permissão
+   - Active link automático
+   - Integração com auth.js
+8. **login.html** - Página completa com:
+   - Design profissional
+   - Validação inline
+   - Loading state
+   - Redirecionamento automático
+   - Suporte a dark mode
+
+**Terminologia Correta:**
+- ✅ `colaborador` (não estagiario)
+- ✅ `gestor` (não professor)
+- ✅ `cargo` e `departamento` (não disciplina)
+
+**Sistema de Permissões:**
+- ✅ Admin: cadastro e exclusão de usuários
+- ✅ Gestor/Admin: dashboard, consultar, Nine Box, relatórios
+- ✅ Colaborador: perfil, avaliações próprias
+
+**Regras de Negócio:**
+- ✅ RA obrigatório (5-10 caracteres)
+- ✅ Email válido (qualquer domínio)
+- ✅ localStorage apenas para sessão (token + user)
+- ✅ Avaliações anônimas por padrão
+- ✅ Tipo de avaliação derivado automaticamente
+
+**Próximos Passos para Estagiários:**
+
+**Estagiário 1 deve criar:**
+1. Todos os módulos JS base (config, api, auth, validators, loading, toast, navbar)
+2. Página de login completa
+3. Revisar e completar CSS (design system)
+4. Testar autenticação e navegação
+
+**Estagiário 2 deve criar:**
+1. Página de cadastro (pages/cadastrar.html)
+2. Página de consulta (pages/consultar.html)
+3. Página de avaliações (pages/avaliacoes.html)
+4. Página Nine Box (pages/nine-box.html)
+5. Página de competências (pages/competencias.html)
+6. Página de perfil (perfil.html)
+7. Página de relatórios (pages/relatorios.html)
+8. Página sobre (pages/sobre.html)
+9. CSS específicos (avaliacoes.css, nine-box.css, competencias.css)
+
+---
+
+## NOVA ATUALIZAÇÃO - Sistema de Avaliações Bidirecionais e Anônimas
+
+### Mudanças implementadas
+
+**Sistema de Avaliação Atualizado:**
+- ✅ **Colaboradores podem avaliar gestores** (anônimo)
+- ✅ **Gestores podem avaliar colaboradores** (anônimo)
+- ✅ **Admin pode ver quem avaliou quem** (auditoria)
+- ✅ **Avaliações são anônimas por padrão**
+- ✅ **Sistema determina tipo automaticamente**
+
+**Schema do Banco Atualizado:**
+- ✅ Campo `tipoAvaliacao` (enum) substituiu `tipo` (string)
+- ✅ Campo `anonima` (boolean) adicionado
+- ✅ Novos tipos: `gestor_para_colaborador`, `colaborador_para_gestor`, `avaliacao_360`
+- ✅ Seed atualizado com avaliações bidirecionais
+
+**Documentação Atualizada:**
+- ✅ `docs/backend/ESTAGIARIO_2_EVALUATIONS.md` - Sistema anônimo completo
+- ✅ `docs/backend/SCHEMA.prisma` - Enum e seed atualizados
+- ✅ `docs/BACKEND.md` - Permissões atualizadas
+- ✅ `README.md` - Funcionalidades atualizadas
+- ✅ `docs/COMECE_AQUI.md` - Arquitetura atualizada
+
+**Como funciona agora:**
+```javascript
+// Colaborador avalia gestor (anônimo)
+POST /api/evaluations
+{
+  "avaliadoId": "gestor-id",
+  "criterios": { "lideranca": 5 },
+  "comentario": "Ótimo gestor"
+}
+
+// Response (sem avaliadorId)
+{
+  "id": "uuid",
+  "avaliadoId": "gestor-id", 
+  "tipoAvaliacao": "colaborador_para_gestor",
+  "anonima": true
+  // avaliadorId omitido para manter anonimato
+}
+```
+
+---
 
 ## Correção Importante - RA do ENIAC
 
 ### Sistema de RA Corrigido
 
 **O que é RA:**
-- Registro Acadêmico do ENIAC (7 dígitos)
+- Registro Acadêmico do ENIAC (5 a 10 caracteres)
 - Cada colaborador e gestor já tem seu RA
 - É como um CPF - um número único que a pessoa já possui
 - Admin também tem RA próprio
 
 **Como funciona no sistema:**
 - No cadastro, a pessoa informa o RA dela
-- Sistema valida se tem 7 dígitos
+- Sistema valida se tem entre 5 e 10 caracteres
 - Sistema verifica se não está duplicado no banco
 - Sistema NÃO gera RA automaticamente
 
@@ -40,7 +238,7 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 ### Backend
 
 #### Schema Prisma Atualizado
-- ✅ Adicionado campo `ra` (String, unique, 7 dígitos)
+- ✅ Adicionado campo `ra` (String, unique, 5 a 10 caracteres)
 - ✅ Adicionado índice em `ra` para busca rápida
 - ✅ Adicionado tipo `admin` no enum `UserType`
 - ✅ Enum agora: `admin`, `gestor`, `colaborador`
@@ -48,7 +246,7 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 #### Sistema de RA (Registro Acadêmico)
 - ✅ Cada pessoa já tem seu RA (como CPF)
 - ✅ No cadastro, pessoa informa o RA dela
-- ✅ Sistema valida se tem 7 dígitos
+- ✅ Sistema valida se tem entre 5 e 10 caracteres
 - ✅ Sistema verifica se não está duplicado
 - ✅ Admin também tem RA próprio
 - ✅ Único por usuário (constraint no banco)
@@ -69,7 +267,8 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 **Módulo de Avaliações (Estagiário 2)**:
 - ✅ Todos os endpoints documentados com regras de permissão
 - ✅ Adicionada seção "Rotas Protegidas" com exemplos de código
-- ✅ Middlewares: `isGestorOrAdminMiddleware` em POST/PUT/DELETE
+- ✅ Criação de avaliações e comentários para todos autenticados (`authMiddleware` + validação no service)
+- ✅ Nine Box protegido com `isGestorOrAdminMiddleware`
 - ✅ Validações no service para update/delete (apenas criador ou admin)
 - ✅ Filtros por permissão em GET (admin vê tudo, gestor vê equipe, colaborador vê próprio)
 
@@ -97,7 +296,7 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 - ✅ Método `requireAdmin()` para proteger páginas
 
 #### Validações
-- ✅ Validador `ra` adicionado (7 dígitos numéricos)
+- ✅ Validador `ra` adicionado (5 a 10 caracteres)
 - ✅ Mensagem de erro para RA inválido
 
 #### Páginas
@@ -155,8 +354,8 @@ Documentação completamente atualizada e consistente com o sistema de RA e perm
 - [ ] Testar todos os endpoints
 
 #### Módulo de Avaliações (Estagiário 2)
-- [ ] Atualizar `evaluation.routes.js` com middlewares de permissão
-- [ ] Adicionar `isGestorOrAdminMiddleware` em POST/PUT/DELETE
+- [ ] Atualizar `evaluation.routes.js` com middlewares de autenticação e permissão
+- [ ] Garantir `authMiddleware` em criação/listagem e `isGestorOrAdminMiddleware` apenas em rotas de Nine Box
 - [ ] Implementar validações no `evaluation.service.js`:
   - [ ] Método `update()` - validar se é criador ou admin
   - [ ] Método `delete()` - validar se é criador ou admin

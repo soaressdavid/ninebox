@@ -11,7 +11,7 @@ Sistema de avaliação de desempenho com gestão de colaboradores, avaliações 
 
 - Sistema de permissões (Admin, Gestor, Colaborador)
 - Cadastro e busca por RA (Registro Acadêmico - 7 dígitos)
-- Avaliações de desempenho com critérios
+- **Avaliações bidirecionais e anônimas** (colaboradores avaliam gestores e vice-versa)
 - Sistema Nine Box (Performance × Potencial)
 - Avaliações 360° e 180°
 - Gestão de competências
@@ -38,9 +38,9 @@ Styles      validators   JSON       Data
 ```
 
 ### Permissões (3 níveis)
-- **Admin**: Acesso total, cadastra usuários
-- **Gestor**: Avalia colaboradores, vê relatórios da equipe
-- **Colaborador**: Vê próprio perfil e avaliações
+- **Admin**: Acesso total, cadastra usuários, vê quem avaliou quem (auditoria)
+- **Gestor**: Avalia colaboradores anonimamente, vê relatórios da equipe
+- **Colaborador**: Avalia gestores anonimamente, vê próprio perfil e avaliações
 
 ---
 

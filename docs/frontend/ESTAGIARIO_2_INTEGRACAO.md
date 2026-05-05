@@ -1,1392 +1,1481 @@
-# ESTAGIÁRIO FRONTEND 2 - Funcionalidades e Integração
+# ESTAGIÁRIO FRONTEND 2 - Integração Completa das Páginas com o Backend
 
-## Sua Responsabilidade
+## Missão
 
-Você vai integrar as páginas com a API e implementar todas as funcionalidades CRUD.
+Você vai pegar a base criada pelo Estagiário 1 e reescrever o frontend legado para ficar 100% alinhado com o backend.
 
----
+Seu trabalho cobre:
 
-## Pré-requisitos
-
-**IMPORTANTE**: Antes de começar, certifique-se de que:
-
-1. **Backend está rodando** em `http://localhost:3000`
-2. **CORS está configurado** no backend para aceitar requisições do frontend
-3. **Estagiário 1** já criou os módulos base (`api.js`, `auth.js`, `loading.js`, `toast.js`)
-
-**Configuração CORS no Backend** (em `backend/src/app.js`):
-```javascript
-import cors from 'cors';
-
-app.use(cors({
-  origin: 'http://localhost:5500', // URL do Live Server
-  credentials: true
-}));
-```
+1. Atualização de terminologia (FASE 2)
+2. Integração completa com API (FASE 4)
+3. CRUD de usuários
+4. Dashboard com dados reais
+5. Sistema de avaliações anônimas e bidirecionais (FASE 5)
+6. Remoção do uso de `localStorage` como banco de dados
 
 ---
 
-## Objetivos
+## Terminologia obrigatória
 
-1. Criar módulo de validações (incluindo RA)
-2. Integrar página de cadastro com API (apenas admin pode cadastrar)
-3. Integrar página de consulta com API
-4. Integrar avaliações com API
-5. Implementar filtros e busca (incluindo busca por RA)
-6. Melhorar feedback visual
-7. Atualizar dashboard com dados reais
+O sistema usa os seguintes termos. Nunca use os termos antigos.
 
-**IMPORTANTE**: O sistema agora usa RA (Registro Acadêmico):
-- Cada pessoa já tem seu RA (como CPF)
-- No cadastro, a pessoa informa o RA dela
-- Sistema valida o formato (5 a 15 caracteres) e se não está duplicado
-- Usado para buscar usuários: `GET /api/users/ra/:ra`
-- Campo obrigatório no cadastro
+| ❌ Antigo       | ✅ Correto      |
+|----------------|----------------|
+| `estagiario`   | `colaborador`  |
+| `professor`    | `gestor`       |
+| `disciplina`   | `cargo` ou `departamento` |
 
-**Apenas ADMIN pode cadastrar novos usuários!**
+Isso vale para variáveis, labels, comentários, payloads, filtros e qualquer texto visível ao usuário.
 
 ---
 
-## Arquivos que você vai trabalhar
+## Dependências deste trabalho
 
-```
-js/
-├── validators.js       # CRIAR - Validações
-│
-└── pages/
-    ├── cadastrar.js    # CRIAR - Lógica de cadastro
-    ├── consultar.js    # CRIAR - Lógica de consulta
-    ├── avaliacoes.js   # MODIFICAR - Integrar com API
-    ├── dashboard.js    # CRIAR - Dashboard
-    └── perfil.js       # CRIAR - Perfil do usuário
+Antes de começar, o projeto precisa já ter:
 
+- `js/config.js`
+- `js/api.js`
+- `js/auth.js`
+- `js/validators.js`
+- `js/components/loading.js`
+- `js/components/toast.js`
+- `pages/login.html`
+- `js/pages/login.js`
+
+Se esses módulos ainda não existirem, pare e alinhe com o Estagiário 1.
+
+---
+
+## Escopo por fase
+
+### FASE 2: Atualizar Terminologia
+
+Você deve trocar no frontend inteiro:
+
+- `estagiario` → `colaborador`
+- `professor` → `gestor`
+- `disciplina` → `cargo` ou `departamento`
+
+Também deve:
+
+- adicionar campo `RA` obrigatório nos formulários de cadastro
+- revisar labels, textos e badges
+- revisar filtros, payloads e renderização
+- atualizar a validação de email para aceitar qualquer domínio válido
+
+### FASE 4: Integração com API
+
+Você deve:
+
+- substituir arrays de `localStorage` por chamadas à API
+- implementar CRUD completo de usuários
+- integrar perfil, dashboard, avaliações, competências e relatórios
+- adicionar loading e tratamento de erro em todas as telas
+
+### FASE 5: Avaliações anônimas e bidirecionais
+
+Você deve alinhar as telas de avaliação para o backend atual:
+
+- avaliações bidirecionais (gestor avalia colaborador e vice-versa)
+- anonimato preservado (`avaliadorId` nunca exibido para usuário comum)
+- tipos corretos de avaliação
+- uso dos endpoints reais
+
+---
+
+## Incompatibilidades que você precisa eliminar
+
+### Dados locais como fonte de verdade
+
+Não pode mais existir lógica de negócio baseada em:
+
+- `localStorage.contatos`
+- `localStorage.avaliacoes`
+- `localStorage.nineBoxAvaliacoes`
+- qualquer array mock persistido como fonte oficial
+
+`localStorage` fica restrito a sessão mínima de autenticação (token + usuário).
+
+### Terminologia antiga
+
+Não pode sobrar no comportamento do frontend:
+
+- `tipo: "professor"`
+- `tipo: "estagiario"`
+- campos `disciplina` para representar papel/cargo
+
+### Fluxos sem permissão
+
+Cada tela precisa validar acesso:
+
+- `admin`: cadastro e exclusão de usuários
+- `gestor`/`admin`: dashboard estratégico, equipe, Nine Box
+- `colaborador`: perfil próprio, avaliações próprias, fluxo de avaliação permitido
+
+---
+
+## Contrato oficial do backend
+
+### Usuários
+
+- `POST /api/users/register`
+- `POST /api/users/login`
+- `GET /api/users/profile`
+- `PUT /api/users/profile`
+- `GET /api/users`
+- `GET /api/users/:id`
+- `GET /api/users/ra/:ra`
+- `DELETE /api/users/:id`
+
+### Avaliações
+
+- `POST /api/evaluations`
+- `POST /api/evaluations/comment`
+- `GET /api/evaluations`
+- `GET /api/evaluations/:id`
+- `GET /api/evaluations/user/:userId`
+- `GET /api/evaluations/stats/:userId`
+- `PUT /api/evaluations/:id`
+- `DELETE /api/evaluations/:id`
+- `POST /api/evaluations/nine-box`
+- `GET /api/evaluations/nine-box`
+- `GET /api/evaluations/nine-box/:id`
+
+### Competências e relatórios
+
+- `GET /api/competencies`
+- `GET /api/competencies/:id`
+- `GET /api/competencies/types`
+- `POST /api/competencies`
+- `PUT /api/competencies/:id`
+- `DELETE /api/competencies/:id`
+- `GET /api/reports/dashboard`
+- `GET /api/reports/user/:userId`
+- `GET /api/reports/team/:gestorId`
+- `GET /api/reports/export/:userId`
+
+---
+
+## Estrutura de páginas que você vai reescrever
+
+```text
 pages/
-├── cadastrar.html      # MODIFICAR - Integrar
-├── consultar.html      # MODIFICAR - Integrar
-├── avaliacoes.html     # MODIFICAR - Integrar
-└── perfil.html         # MODIFICAR - Integrar
+├── cadastrar.html
+├── consultar.html
+├── avaliacoes.html
+├── avaliacao-180.html      ✨ Nova: Avaliação 180° (gestor → colaborador)
+├── avaliacao-360.html      ✨ Nova: Avaliação 360° (admin → qualquer)
+├── nine-box.html
+├── competencias.html
+├── relatorios.html
+├── sobre.html
+└── perfil.html
+
+css/
+├── style.css               (global)
+├── avaliacoes.css
+├── avaliacao-180.css       ✨ Nova: Estilos específicos para 180°
+├── responder-180.css       ✨ Nova: Estilos para responder 180°
+├── nine-box.css
+└── competencias.css
+
+js/pages/
+├── cadastrar.js
+├── consultar.js
+├── avaliacoes.js
+├── dashboard.js
+├── nine-box.js
+├── competencias.js
+└── perfil.js
 ```
 
 ---
 
-## Tarefas Detalhadas
+## Regras funcionais por área
 
-### TAREFA 1: Criar validators.js
+## 1. Cadastro de usuários
+
+### Regras
+
+- apenas `admin` pode cadastrar
+- RA é obrigatório
+- tipos permitidos:
+  - `gestor`
+  - `colaborador`
+- o formulário precisa refletir o tipo escolhido
+
+### Mapeamento de campos
+
+Campos comuns para todos:
+
+- `ra` (obrigatório, 5 a 10 caracteres)
+- `nome` (obrigatório, mínimo 3 caracteres)
+- `email` (obrigatório, formato válido)
+- `senha` (obrigatório, mínimo 6 caracteres)
+- `tipo` (obrigatório: `gestor` ou `colaborador`)
+- `foto` (opcional)
+
+Para `gestor`:
+
+- `departamento` (obrigatório)
+- `cargo` (opcional)
+
+Para `colaborador`:
+
+- `cargo` (obrigatório)
+- `departamento` (opcional)
+
+### Validações mínimas
+
+- nome obrigatório
+- email válido (qualquer domínio)
+- senha com mínimo de 6 caracteres
+- RA com 5 a 10 caracteres
+- tipo obrigatório
+
+### Observação importante
+
+O backend é a fonte de verdade para validação final. O frontend valida antes para melhorar UX, mas não substitui a regra da API.
+
+---
+
+## 2. Consulta de usuários
+
+### A tela deve permitir
+
+- listar usuários pela API
+- filtrar por `tipo` (`gestor`, `colaborador`)
+- filtrar por `departamento`
+- buscar por `RA`
+- exibir ações conforme permissão
+
+### Comportamento esperado
+
+- `admin` vê todos e pode excluir
+- `gestor` vê dados permitidos da equipe
+- `colaborador` não acessa listagem administrativa
+
+Use:
 
 ```javascript
-// js/validators.js
+api.getUsers(filters)
+api.getUserByRA(ra)
+api.deleteUser(id)
+```
 
-const validators = {
-  // Validar email
-  email(value) {
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return regex.test(value);
-  },
+---
 
-  // Validar senha (mínimo 6 caracteres)
-  password(value) {
-    return value && value.length >= 6;
-  },
+## 3. Perfil
 
-  // Validar nome (mínimo 3 caracteres)
-  name(value) {
-    return value && value.trim().length >= 3;
-  },
+### A tela de perfil deve usar API
 
-  // Validar campo obrigatório
-  required(value) {
-    return value !== null && value !== undefined && value.toString().trim() !== '';
-  },
+- carregar via `api.getProfile()`
+- salvar via `api.updateProfile(data)`
 
-  // Validar número
-  number(value) {
-    return !isNaN(value) && value !== '';
-  },
+### O que não fazer
 
-  // Validar range
-  range(value, min, max) {
-    const num = Number(value);
-    return num >= min && num <= max;
-  },
+- não renderizar perfil a partir de objeto salvo manualmente em `localStorage`
+- não manter cópia paralela do perfil como fonte principal
 
-  // Validar seleção
-  selected(value) {
-    return value && value !== '';
-  },
+---
 
-  // Validar RA (5 a 15 caracteres)
-  ra(value) {
-    return value && value.length >= 5 && value.length <= 15;
+## 4. Dashboard e relatórios
+
+### Dashboard
+
+Deve usar:
+
+```javascript
+api.getDashboard()
+```
+
+### Regras
+
+- `admin` e `gestor` acessam dashboard estratégico
+- `colaborador` não acessa dashboard geral
+
+Se necessário, exiba:
+
+- totais por tipo de usuário
+- distribuição de avaliações
+- indicadores da equipe
+- resumo Nine Box
+
+Sempre com loading, estado vazio e erro.
+
+---
+
+## 5. Avaliações anônimas e bidirecionais
+
+### O sistema correto é este
+
+O backend determina o tipo de avaliação automaticamente com base nos tipos dos usuários envolvidos:
+
+| Avaliador     | Avaliado      | Tipo gerado automaticamente    |
+|---------------|---------------|-------------------------------|
+| `gestor`      | `colaborador` | `gestor_para_colaborador`     |
+| `colaborador` | `gestor`      | `colaborador_para_gestor`     |
+| `admin`       | qualquer      | `avaliacao_360`               |
+
+### Regras de permissão
+
+- `gestor` pode avaliar `colaborador` (anônimo)
+- `colaborador` pode avaliar `gestor` (anônimo)
+- `admin` pode operar qualquer fluxo permitido pela API
+- `gestor` **não pode** avaliar outro `gestor` (exceto admin)
+- `colaborador` **não pode** avaliar outro `colaborador` (exceto admin)
+- ninguém pode se autoavaliar (exceto admin)
+
+### Anonimato
+
+- `avaliadorId` é salvo no banco para controle interno
+- `avaliadorId` **nunca** é exibido para usuário comum
+- apenas `admin` vê quem avaliou quem (auditoria)
+- a interface deve deixar claro quando a avaliação é anônima
+
+### Payload mínimo de criação
+
+```json
+{
+  "avaliadoId": "uuid",
+  "comentario": "Texto opcional",
+  "anonima": true
+}
+```
+
+Se a API exigir critérios/notas, envie exatamente no formato definido pelo backend:
+
+```json
+{
+  "avaliadoId": "uuid",
+  "criterios": {
+    "pontualidade": 5,
+    "comunicacao": 4,
+    "tecnico": 5,
+    "proatividade": 4,
+    "equipe": 5
   },
+  "comentario": "Excelente profissional",
+  "anonima": true
+}
+```
+
+### O que a tela precisa garantir
+
+- impedir autoavaliação indevida quando a API não permitir
+- listar avaliações via API
+- exibir dados sanitizados sem tentar "descobrir" o avaliador
+- mostrar mensagens adequadas de sucesso e falha
+- não pedir `tipoAvaliacao` manualmente quando puder ser derivado do contexto
+
+---
+
+## 6. Nine Box
+
+### Regras
+
+- somente `gestor` e `admin` podem criar
+- `colaborador` pode no máximo ver o que a API permitir
+
+### Categorias Nine Box
+
+| Performance | Potential | Categoria      |
+|-------------|-----------|----------------|
+| 3           | 3         | Superstar      |
+| 3           | 2         | Especialista   |
+| 3           | 1         | Âncora         |
+| 2           | 3         | Estrela        |
+| 2           | 2         | Núcleo         |
+| 2           | 1         | Trabalhador    |
+| 1           | 3         | Enigma         |
+| 1           | 2         | Dilema         |
+| 1           | 1         | Questão        |
+
+### A tela deve usar
+
+```javascript
+api.createNineBox(data)
+api.getNineBox(filters)
+```
+
+Não use cálculos locais como fonte final do grid se a API já trouxer a classificação.
+
+---
+
+## 7. Competências
+
+### Regras
+
+- leitura para todos os usuários autenticados
+- criação/edição/exclusão apenas para `admin`
+
+### Tipos de competência
+
+- `desempenho`
+- `comportamento`
+- `tecnica`
+- `lideranca`
+
+### A tela deve usar
+
+```javascript
+api.getCompetencies()
+api.getCompetencyTypes()
+api.createCompetency(data)
+api.updateCompetency(id, data)
+api.deleteCompetency(id)
+```
+
+---
+
+## 8. Página Sobre
+
+### Objetivo
+
+Página informativa sobre o sistema, acessível a todos os usuários autenticados.
+
+### Conteúdo obrigatório
+
+A página deve conter:
+
+1. **Hero Section**
+   - Ícone do sistema
+   - Título: "Portal de Gestão de Pessoas"
+   - Descrição breve do sistema
+
+2. **O que é o sistema**
+   - Explicação sobre o propósito
+   - Foco em avaliações anônimas e bidirecionais
+   - Cultura de feedback contínuo
+
+3. **Principais Funcionalidades**
+   - Cards com ícones para cada funcionalidade:
+     - Gestão de Usuários
+     - Avaliações Anônimas
+     - Nine Box Grid
+     - Competências
+     - Relatórios
+     - Avaliação 180° e 360°
+
+4. **Tecnologias Utilizadas**
+   - Badges com as tecnologias:
+     - Node.js + Express
+     - PostgreSQL + Prisma ORM
+     - JavaScript ES6+
+     - HTML5 + CSS3
+     - JWT Authentication
+     - Bcrypt Encryption
+
+5. **Equipe de Desenvolvimento**
+   - Cards da equipe (pode usar avatares genéricos):
+     - Estagiário Backend 1 (Módulo de Usuários)
+     - Estagiário Backend 2 (Módulo de Avaliações)
+     - Estagiário Backend 3 (Competências e Relatórios)
+     - Estagiário Frontend 1 (Infraestrutura Frontend)
+     - Estagiário Frontend 2 (Integração com Backend)
+
+6. **Contato e Suporte**
+   - Informações de contato
+   - E-mail de suporte
+
+7. **Versão do Sistema**
+   - Número da versão
+   - Data de lançamento
+   - Instituição (ENIAC)
+
+### Regras de implementação
+
+- Página acessível a todos os usuários autenticados
+- Não requer permissões especiais
+- Deve usar `requireAuth()` para proteger
+- Design limpo e profissional
+- Responsiva para mobile
+- Suporte a dark mode
+
+### Estrutura HTML
+
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <!-- Meta tags e links CSS -->
+</head>
+<body>
+  <header><!-- Header padrão --></header>
+  <nav class="navbar"><!-- Navbar padrão --></nav>
+  
+  <main class="wrapper sobre-wrapper">
+    <div class="sobre-container">
+      <!-- Hero -->
+      <div class="sobre-hero">...</div>
+      
+      <!-- Seções -->
+      <div class="sobre-section"><!-- O que é --></div>
+      <div class="sobre-section"><!-- Funcionalidades --></div>
+      <div class="sobre-section"><!-- Tecnologias --></div>
+      <div class="sobre-section"><!-- Equipe --></div>
+      <div class="sobre-section"><!-- Contato --></div>
+      <div class="sobre-section"><!-- Versão --></div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { requireAuth } from '../js/auth.js';
+    import '../js/navbar.js';
+    requireAuth();
+  </script>
+</body>
+</html>
+```
+
+### CSS específico
+
+A página usa apenas o `style.css` global com estilos inline específicos para:
+- `.sobre-wrapper` - Container principal
+- `.sobre-hero` - Seção hero com gradiente
+- `.sobre-section` - Cards de seção
+- `.sobre-features` - Grid de funcionalidades
+- `.sobre-feature` - Card de funcionalidade
+- `.sobre-tech` - Badges de tecnologia
+- `.sobre-team` - Grid da equipe
+- `.sobre-contact` - Card de contato
+
+---
+
+## 9. Implementações Detalhadas por Página
+
+### 9.1. Cadastrar (pages/cadastrar.html)
+
+**Estrutura:**
+- Toggle de tipo (Gestor / Colaborador)
+- Formulário com campos dinâmicos baseado no tipo
+- Validação inline
+- Proteção: apenas admin
+
+**Campos do formulário:**
+```javascript
+// Campos comuns
+- RA (input text, 5-10 caracteres)
+- Nome completo (input text)
+- E-mail institucional (input email)
+- Senha (input password, min 6 caracteres)
+- Cargo (input text)
+- Departamento (input text)
+
+// Toggle tipo: gestor | colaborador
+```
+
+**Lógica JavaScript:**
+```javascript
+import { requireRole } from '../js/auth.js';
+import { usersApi } from '../js/api.js';
+import { validateCadastroForm } from '../js/validators.js';
+
+requireRole('admin'); // Apenas admin pode cadastrar
+
+window.setTipoCad = function(tipo) {
+  document.getElementById('cad-tipo').value = tipo;
+  // Atualizar UI do toggle
 };
 
-// Função para validar campo individual
-function validateField(field, rules) {
-  const value = field.value;
-  
-  for (const rule of rules) {
-    const [validatorName, ...params] = rule.split(':');
-    const validator = validators[validatorName];
-
-    if (!validator) continue;
-
-    const ruleParams = params.length > 0 ? params[0].split(',').map(p => p.trim()) : [];
-    const isValid = validator(value, ...ruleParams);
-
-    if (!isValid) {
-      return {
-        isValid: false,
-        message: getErrorMessage(validatorName, field.name || field.id, ruleParams)
-      };
-    }
-  }
-
-  return { isValid: true };
-}
-
-// Mostrar erro no campo
-function showFieldError(field, message) {
-  field.classList.add('error');
-  
-  // Remover erro anterior
-  const oldError = field.parentElement.querySelector('.field-error');
-  if (oldError) oldError.remove();
-  
-  // Adicionar novo erro
-  const errorEl = document.createElement('span');
-  errorEl.className = 'field-error';
-  errorEl.textContent = message;
-  field.parentElement.appendChild(errorEl);
-}
-
-// Limpar erro do campo
-function clearFieldError(field) {
-  field.classList.remove('error');
-  const errorEl = field.parentElement.querySelector('.field-error');
-  if (errorEl) errorEl.remove();
-}
-
-// Mensagens de erro
-function getErrorMessage(validator, fieldName, params = []) {
-  const messages = {
-    required: `${fieldName} é obrigatório`,
-    email: 'Email inválido',
-    password: 'Senha deve ter no mínimo 6 caracteres',
-    name: 'Nome deve ter no mínimo 3 caracteres',
-    number: 'Deve ser um número válido',
-    range: `Valor deve estar entre ${params[0]} e ${params[1]}`,
-    selected: 'Selecione uma opção',
-    ra: 'RA deve ter entre 5 e 15 caracteres',
-  };
-  return messages[validator] || 'Campo inválido';
-}
-
-// Adicionar validação em tempo real
-function addRealtimeValidation(field, rules) {
-  field.addEventListener('blur', () => {
-    const result = validateField(field, rules);
-    if (!result.isValid) {
-      showFieldError(field, result.message);
-    } else {
-      clearFieldError(field);
-    }
-  });
-
-  field.addEventListener('input', () => {
-    if (field.classList.contains('error')) {
-      clearFieldError(field);
-    }
-  });
-}
-
-window.validators = validators;
-window.validateField = validateField;
-window.showFieldError = showFieldError;
-window.clearFieldError = clearFieldError;
-window.addRealtimeValidation = addRealtimeValidation;
-```
-
-**CSS necessário:**
-```css
-/* Adicionar em css/components.css */
-.pg-field input.error,
-.pg-field select.error,
-.pg-field textarea.error {
-  border-color: var(--danger) !important;
-  background: #fff5f5;
-}
-
-.field-error {
-  display: block;
-  color: var(--danger);
-  font-size: 12px;
-  margin-top: 4px;
-  font-weight: 500;
-  animation: slideDown 0.2s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-```
-
----
-
-### TAREFA 2: Integrar página de cadastro
-
-**Modificar `pages/cadastrar.html`:**
-
-**1. Corrigir os tipos de usuário nos botões:**
-```html
-<!-- TIPO -->
-<div class="pg-type-toggle" role="group">
-  <button class="pg-type-btn active" data-tipo="colaborador" onclick="setTipoCad('colaborador')">
-    <i class="fa-solid fa-user"></i> Colaborador
-  </button>
-  <button class="pg-type-btn" data-tipo="gestor" onclick="setTipoCad('gestor')">
-    <i class="fa-solid fa-user-tie"></i> Gestor
-  </button>
-</div>
-```
-
-**2. Adicionar todos os campos obrigatórios:**
-```html
-<!-- FOTO -->
-<div class="pg-foto-wrap">
-  <div class="pg-foto-preview" id="foto-preview" onclick="document.getElementById('cad-foto').click()">
-    <i class="fa-solid fa-camera"></i>
-    <span>Adicionar foto (opcional)</span>
-  </div>
-  <input type="file" id="cad-foto" accept="image/*" style="display:none" onchange="previewFoto(this)">
-</div>
-
-<div class="pg-field">
-  <label for="cad-ra">RA (Registro Acadêmico) *</label>
-  <input type="text" id="cad-ra" placeholder="Ex: 1234567, RA2021001" maxlength="15" autocomplete="off">
-  <small style="color: var(--text-muted); font-size: 12px;">Cada pessoa já possui seu RA único</small>
-</div>
-
-<div class="pg-field">
-  <label for="cad-nome">Nome completo *</label>
-  <input type="text" id="cad-nome" placeholder="Digite o nome completo" autocomplete="off">
-</div>
-
-<div class="pg-field">
-  <label for="cad-email">E-mail *</label>
-  <input type="email" id="cad-email" placeholder="nome@empresa.com">
-</div>
-
-<div class="pg-field">
-  <label for="cad-senha">Senha *</label>
-  <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
-</div>
-
-<div class="pg-field" id="campo-cargo">
-  <label for="cad-cargo">Cargo</label>
-  <input type="text" id="cad-cargo" placeholder="Ex: Analista, Desenvolvedor">
-</div>
-
-<div class="pg-field" id="campo-departamento" style="display:none">
-  <label for="cad-departamento">Departamento</label>
-  <input type="text" id="cad-departamento" placeholder="Ex: TI, RH, Financeiro">
-</div>
-
-<button class="pg-btn" onclick="cadastrarPessoa()">
-  <i class="fa-solid fa-user-plus"></i> Cadastrar
-</button>
-```
-
-**3. Adicionar scripts no final, antes de `</body>`:**
-```html
-<script src="../js/config.js"></script>
-<script src="../js/api.js"></script>
-<script src="../js/auth.js"></script>
-<script src="../js/validators.js"></script>
-<script src="../js/components/toast.js"></script>
-<script src="../js/components/loading.js"></script>
-<script src="../js/pages/cadastrar.js"></script>
-```
-
-**Criar `js/pages/cadastrar.js`:**
-
-```javascript
-// js/pages/cadastrar.js
-
-let tipoSelecionado = 'colaborador';
-let fotoBase64 = null;
-
-// Alternar tipo
-function setTipoCad(tipo) {
-  tipoSelecionado = tipo;
-  
-  // Atualizar botões
-  document.querySelectorAll('.pg-type-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.tipo === tipo);
-  });
-
-  // Mostrar/ocultar campos específicos
-  const campoCargo = document.getElementById('campo-cargo');
-  const campoDepartamento = document.getElementById('campo-departamento');
-  
-  if (tipo === 'gestor') {
-    if (campoCargo) campoCargo.style.display = 'none';
-    if (campoDepartamento) campoDepartamento.style.display = 'block';
-  } else {
-    if (campoCargo) campoCargo.style.display = 'block';
-    if (campoDepartamento) campoDepartamento.style.display = 'none';
-  }
-}
-
-// Preview de foto
-function previewFoto(input) {
-  if (!input.files || !input.files[0]) return;
-
-  const file = input.files[0];
-  
-  // Validar tamanho (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    toast.error('Imagem muito grande. Máximo 5MB.');
-    return;
-  }
-
-  // Validar tipo
-  if (!file.type.startsWith('image/')) {
-    toast.error('Arquivo deve ser uma imagem.');
-    return;
-  }
-
-  const reader = new FileReader();
-  
-  reader.onload = (e) => {
-    fotoBase64 = e.target.result;
-    const preview = document.getElementById('foto-preview');
-    preview.innerHTML = `<img src="${fotoBase64}" alt="Preview">`;
-    preview.classList.add('has-image');
-  };
-  
-  reader.readAsDataURL(file);
-}
-
-// Cadastrar pessoa
-async function cadastrarPessoa() {
-  // Verificar se é admin
-  if (!auth.isAdmin()) {
-    toast.error('Apenas administradores podem cadastrar usuários');
-    return;
-  }
-
-  // Obter valores
-  const ra = document.getElementById('cad-ra').value.trim();
-  const nome = document.getElementById('cad-nome').value.trim();
-  const email = document.getElementById('cad-email').value.trim();
-  const senha = document.getElementById('cad-senha').value;
-  const cargo = document.getElementById('cad-cargo')?.value.trim();
-  const departamento = document.getElementById('cad-departamento')?.value.trim();
-
-  // Validar campos
-  const raField = document.getElementById('cad-ra');
-  const nomeField = document.getElementById('cad-nome');
-  const emailField = document.getElementById('cad-email');
-  const senhaField = document.getElementById('cad-senha');
-
-  let hasError = false;
-
-  // Validar RA
-  const raResult = validateField(raField, ['required', 'ra']);
-  if (!raResult.isValid) {
-    showFieldError(raField, raResult.message);
-    hasError = true;
-  }
-
-  // Validar nome
-  const nomeResult = validateField(nomeField, ['required', 'name']);
-  if (!nomeResult.isValid) {
-    showFieldError(nomeField, nomeResult.message);
-    hasError = true;
-  }
-
-  // Validar email
-  const emailResult = validateField(emailField, ['required', 'email']);
-  if (!emailResult.isValid) {
-    showFieldError(emailField, emailResult.message);
-    hasError = true;
-  }
-
-  // Validar senha
-  const senhaResult = validateField(senhaField, ['required', 'password']);
-  if (!senhaResult.isValid) {
-    showFieldError(senhaField, senhaResult.message);
-    hasError = true;
-  }
-
-  if (hasError) {
-    toast.error('Corrija os erros no formulário');
-    return;
-  }
-
-  // Preparar dados
-  const userData = {
-    ra,
-    nome,
-    email,
-    senha,
-    tipo: tipoSelecionado,
+window.cadastrarUsuario = async function() {
+  const dados = {
+    ra: document.getElementById('cad-ra').value.trim(),
+    nome: document.getElementById('cad-nome').value.trim(),
+    email: document.getElementById('cad-email').value.trim(),
+    senha: document.getElementById('cad-senha').value,
+    tipo: document.getElementById('cad-tipo').value,
+    cargo: document.getElementById('cad-cargo').value.trim(),
+    departamento: document.getElementById('cad-departamento').value.trim()
   };
 
-  if (tipoSelecionado === 'gestor' && departamento) {
-    userData.departamento = departamento;
-  }
-
-  if (tipoSelecionado === 'colaborador' && cargo) {
-    userData.cargo = cargo;
-  }
+  if (!validateCadastroForm(dados)) return;
 
   try {
-    loading.show('Cadastrando...');
-
-    // Cadastrar usuário
-    const response = await api.register(userData);
-
-    // Se tem foto, fazer upload
-    if (fotoBase64 && response.data.id) {
-      try {
-        await api.uploadPhoto(response.data.id, fotoBase64);
-      } catch (error) {
-        console.error('Erro ao fazer upload da foto:', error);
-        // Não bloquear o cadastro por erro na foto
-      }
-    }
-
-    toast.success('Cadastrado com sucesso!');
-
+    await usersApi.register(dados);
+    showToast('Usuário cadastrado com sucesso!', 'success');
     // Limpar formulário
-    document.getElementById('cad-ra').value = '';
-    document.getElementById('cad-nome').value = '';
-    document.getElementById('cad-email').value = '';
-    document.getElementById('cad-senha').value = '';
-    if (document.getElementById('cad-cargo')) document.getElementById('cad-cargo').value = '';
-    if (document.getElementById('cad-departamento')) document.getElementById('cad-departamento').value = '';
-    
-    // Resetar foto
-    fotoBase64 = null;
-    const preview = document.getElementById('foto-preview');
-    preview.innerHTML = '<i class="fa-solid fa-camera"></i><span>Adicionar foto</span>';
-    preview.classList.remove('has-image');
-
-    // Limpar erros
-    clearFieldError(raField);
-    clearFieldError(nomeField);
-    clearFieldError(emailField);
-    clearFieldError(senhaField);
-
   } catch (error) {
-    console.error('Erro ao cadastrar:', error);
-    toast.error(error.message || 'Erro ao cadastrar');
-  } finally {
-    loading.hide();
+    // Erro já tratado pelo api.js
   }
-}
-
-// Adicionar validação em tempo real
-document.addEventListener('DOMContentLoaded', () => {
-  // Verificar se é admin
-  if (!auth.requireAdmin()) return;
-
-  const raField = document.getElementById('cad-ra');
-  const nomeField = document.getElementById('cad-nome');
-  const emailField = document.getElementById('cad-email');
-  const senhaField = document.getElementById('cad-senha');
-
-  if (raField) addRealtimeValidation(raField, ['required', 'ra']);
-  if (nomeField) addRealtimeValidation(nomeField, ['required', 'name']);
-  if (emailField) addRealtimeValidation(emailField, ['required', 'email']);
-  if (senhaField) addRealtimeValidation(senhaField, ['required', 'password']);
-});
+};
 ```
 
 ---
 
-### TAREFA 3: Integrar página de consulta
+### 9.2. Consultar (pages/consultar.html)
 
-**Criar `js/pages/consultar.js`:**
+**Estrutura:**
+- Filtros (Todos / Gestores / Colaboradores)
+- Busca por nome
+- Busca por RA
+- Lista de usuários com paginação
+- Modal de detalhes
+- Proteção: gestor ou admin
 
+**Funcionalidades:**
 ```javascript
-// js/pages/consultar.js
+import { requireRole, isAdmin } from '../js/auth.js';
+import { usersApi } from '../js/api.js';
 
+requireRole('gestorOrAdmin');
+
+let paginaAtual = 1;
 let filtroAtual = 'todos';
-let buscaAtual = '';
-let pessoas = [];
 
-// Carregar pessoas
-async function carregarPessoas() {
-  try {
-    loading.show('Carregando pessoas...');
+async function carregarUsuarios(page = 1) {
+  const params = { page, limit: 10 };
+  if (filtroAtual !== 'todos') params.tipo = filtroAtual;
+  
+  const busca = document.getElementById('busca-nome').value.trim();
+  if (busca) params.search = busca;
 
-    const filters = {};
-    if (filtroAtual !== 'todos') {
-      filters.tipo = filtroAtual;
-    }
-    if (buscaAtual) {
-      filters.search = buscaAtual;
-    }
-
-    const response = await api.getUsers(filters);
-    pessoas = response.data.users || [];
-
-    renderPessoas();
-
-  } catch (error) {
-    console.error('Erro ao carregar pessoas:', error);
-    toast.error('Erro ao carregar pessoas');
-  } finally {
-    loading.hide();
-  }
+  const res = await usersApi.list(params);
+  renderLista(res.data.users);
+  renderPaginacao(res.data.pagination);
 }
 
-// Renderizar lista de pessoas
-function renderPessoas() {
-  const container = document.getElementById('lista-pessoas');
-  if (!container) return;
+window.filtrar = function(tipo) {
+  filtroAtual = tipo;
+  carregarUsuarios(1);
+};
 
-  if (pessoas.length === 0) {
-    container.innerHTML = '<p class="pg-empty">Nenhuma pessoa encontrada.</p>';
-    return;
-  }
+window.buscarPorRA = async function() {
+  const ra = document.getElementById('busca-ra').value.trim();
+  if (!ra) return;
+  const res = await usersApi.getByRA(ra);
+  renderLista([res.data]);
+};
 
-  container.innerHTML = pessoas.map(pessoa => `
-    <div class="pg-pessoa-card">
-      <div class="pg-pessoa-avatar">
-        ${pessoa.foto 
-          ? `<img src="${pessoa.foto}" alt="${pessoa.nome}">`
-          : `<span>${utils.getInitials(pessoa.nome)}</span>`
-        }
-      </div>
-      <div class="pg-pessoa-info">
-        <h4>${pessoa.nome}</h4>
-        <p class="pg-pessoa-email">${pessoa.email}</p>
-        <p class="pg-pessoa-ra">RA: ${pessoa.ra}</p>
-        <span class="pg-pessoa-badge ${pessoa.tipo}">${pessoa.tipo === 'gestor' ? 'Gestor' : 'Colaborador'}</span>
-      </div>
-      <div class="pg-pessoa-actions">
-        <button class="pg-btn-icon" onclick="verPerfil('${pessoa.id}')" title="Ver perfil">
-          <i class="fa-solid fa-eye"></i>
-        </button>
-        ${auth.isAdmin() ? `
-          <button class="pg-btn-icon danger" onclick="confirmarExclusao('${pessoa.id}', '${pessoa.nome}')" title="Excluir">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        ` : ''}
-      </div>
-    </div>
-  `).join('');
-}
-
-// Filtrar pessoas
-function filtrarPessoas(filtro) {
-  if (filtro) {
-    filtroAtual = filtro;
-    
-    // Atualizar botões
-    document.querySelectorAll('.pg-filtro').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.filtro === filtro);
-    });
-  }
-
-  // Obter busca
-  const buscaInput = document.getElementById('busca');
-  if (buscaInput) {
-    buscaAtual = buscaInput.value.trim();
-  }
-
-  carregarPessoas();
-}
-
-// Debounce para busca
-const debouncedFilter = utils.debounce(filtrarPessoas, 500);
-
-// Ver perfil
-function verPerfil(id) {
-  window.location.href = `/perfil.html?id=${id}`;
-}
-
-// Confirmar exclusão
-function confirmarExclusao(id, nome) {
-  if (confirm(`Deseja realmente excluir ${nome}?`)) {
-    excluirPessoa(id);
-  }
-}
-
-// Excluir pessoa
-async function excluirPessoa(id) {
-  try {
-    loading.show('Excluindo...');
-
-    await api.deleteUser(id);
-
-    toast.success('Pessoa excluída com sucesso');
-    carregarPessoas();
-
-  } catch (error) {
-    console.error('Erro ao excluir:', error);
-    toast.error(error.message || 'Erro ao excluir pessoa');
-  } finally {
-    loading.hide();
-  }
-}
-
-// Inicializar
-document.addEventListener('DOMContentLoaded', () => {
-  carregarPessoas();
-
-  // Adicionar evento de busca
-  const buscaInput = document.getElementById('busca');
-  if (buscaInput) {
-    buscaInput.addEventListener('input', debouncedFilter);
-  }
-});
-```
-
-**CSS necessário:**
-```css
-/* Adicionar em css/pages.css */
-.pg-pessoa-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  background: var(--surface);
-  padding: 16px;
-  border-radius: var(--radius-sm);
-  border: 1.5px solid var(--border);
-  margin-bottom: 12px;
-  transition: all 0.2s;
-}
-
-.pg-pessoa-card:hover {
-  border-color: var(--accent);
-  box-shadow: var(--shadow-sm);
-}
-
-.pg-pessoa-avatar {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-weight: 600;
-  font-size: 16px;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.pg-pessoa-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.pg-pessoa-info {
-  flex: 1;
-}
-
-.pg-pessoa-info h4 {
-  margin: 0 0 4px 0;
-  color: var(--primary);
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.pg-pessoa-email {
-  margin: 0 0 6px 0;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-.pg-pessoa-ra {
-  margin: 0 0 6px 0;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.pg-pessoa-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.pg-pessoa-badge.gestor {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.pg-pessoa-badge.colaborador {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.pg-pessoa-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.pg-btn-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  border: 1.5px solid var(--border);
-  background: transparent;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
-  padding: 0;
-  margin: 0;
-}
-
-.pg-btn-icon:hover {
-  background: #f0f9ff;
-  color: var(--primary);
-  border-color: var(--primary-light);
-  transform: none;
-  box-shadow: none;
-}
-
-.pg-btn-icon.danger {
-  color: var(--danger);
-  border-color: #fecaca;
-}
-
-.pg-btn-icon.danger:hover {
-  background: #fff5f5;
-  border-color: var(--danger);
-}
-
-.pg-empty {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 40px 20px;
-  font-size: 14px;
-}
+window.deletarUsuario = async function(id, nome) {
+  if (!isAdmin()) return;
+  if (!confirm(`Deletar "${nome}"?`)) return;
+  await usersApi.delete(id);
+  carregarUsuarios(paginaAtual);
+};
 ```
 
 ---
 
-### TAREFA 4: Atualizar Dashboard
+### 9.3. Avaliações (pages/avaliacoes.html)
 
-**Criar `js/pages/dashboard.js`:**
+**Estrutura em 3 etapas:**
 
+**Etapa 1: Seleção do tipo**
+- Card "Avaliação de Gestor" (colaborador avalia gestor)
+- Card "Avaliação de Colaborador" (gestor avalia colaborador)
+- Card "Ver Histórico"
+
+**Etapa 2: Formulário de avaliação**
+- Select de quem avaliar (filtrado por permissão)
+- Critérios com estrelas (1-5):
+  - Pontualidade
+  - Comunicação
+  - Desempenho Técnico
+  - Proatividade
+  - Trabalho em Equipe
+- Média geral calculada
+- Comentário opcional
+- Histórico lateral com filtros
+
+**Etapa 3: Histórico completo**
+- Lista todas as avaliações
+- Filtros: Todos / Recebidas / Feitas por mim
+
+**Lógica de permissões:**
 ```javascript
-// js/pages/dashboard.js
+import { getUser, isGestor, isColaborador } from '../js/auth.js';
 
-async function carregarDashboard() {
-  try {
-    loading.show('Carregando dashboard...');
-
-    const response = await api.getDashboard();
-    const data = response.data;
-
-    renderDashboardStats(data);
-
-  } catch (error) {
-    console.error('Erro ao carregar dashboard:', error);
-    
-    // Mostrar mensagem de boas-vindas se não houver dados
-    const container = document.getElementById('dash-stats');
-    if (container) {
-      container.innerHTML = `
-        <div class="dash-welcome">
-          <i class="fa-solid fa-users"></i>
-          <h3>Bem-vindo ao Portal de Gestão de Pessoas!</h3>
-          <p>Comece cadastrando gestores e colaboradores para usar o sistema.</p>
-          <a href="pages/cadastrar.html" class="dash-welcome-btn">
-            <i class="fa-solid fa-user-plus"></i> Cadastrar primeira pessoa
-          </a>
-        </div>
-      `;
-    }
-  } finally {
-    loading.hide();
-  }
+// Gestor: só pode avaliar colaborador
+if (isGestor()) {
+  document.getElementById('card-gestor').style.display = 'none';
 }
 
-function renderDashboardStats(data) {
-  const container = document.getElementById('dash-stats');
-  if (!container) return;
-
-  const { usuarios, avaliacoes, nineBox, competencias } = data;
-
-  container.innerHTML = `
-    <div class="dash-stat">
-      <i class="fa-solid fa-user-tie"></i>
-      <div>
-        <span class="dash-stat-val">${usuarios.gestores}</span>
-        <span class="dash-stat-label">Gestores</span>
-      </div>
-    </div>
-    <div class="dash-stat">
-      <i class="fa-solid fa-users"></i>
-      <div>
-        <span class="dash-stat-val">${usuarios.colaboradores}</span>
-        <span class="dash-stat-label">Colaboradores</span>
-      </div>
-    </div>
-    <div class="dash-stat">
-      <i class="fa-solid fa-star"></i>
-      <div>
-        <span class="dash-stat-val">${avaliacoes.total}</span>
-        <span class="dash-stat-label">Avaliações</span>
-      </div>
-    </div>
-    <div class="dash-stat">
-      <i class="fa-solid fa-th"></i>
-      <div>
-        <span class="dash-stat-val">${nineBox.total}</span>
-        <span class="dash-stat-label">Nine Box</span>
-      </div>
-    </div>
-  `;
+// Colaborador: só pode avaliar gestor
+if (isColaborador()) {
+  document.getElementById('card-colaborador').style.display = 'none';
 }
 
-// Carregar ao iniciar
-document.addEventListener('DOMContentLoaded', carregarDashboard);
+// Carregar lista de quem pode ser avaliado
+async function carregarAvaliaveis() {
+  let tipo;
+  if (isGestor()) tipo = 'colaborador';
+  else if (isColaborador()) tipo = 'gestor';
+  
+  const res = await usersApi.list({ tipo, limit: 100 });
+  const users = res.data.users.filter(u => u.id !== getUser().id);
+  // Renderizar no select
+}
+
+// Enviar avaliação
+window.enviarAvaliacao = async function() {
+  const payload = {
+    avaliadoId: document.getElementById('avaliado').value,
+    criterios: {
+      pontualidade: notas.pontualidade,
+      comunicacao: notas.comunicacao,
+      tecnico: notas.tecnico,
+      proatividade: notas.proatividade,
+      equipe: notas.equipe
+    },
+    comentario: document.getElementById('comentario').value.trim() || null,
+    anonima: true
+  };
+
+  await evaluationsApi.create(payload);
+  showToast('Avaliação enviada com sucesso!', 'success');
+};
 ```
 
-**Adicionar em `index.html`:**
-```html
-<script src="js/config.js"></script>
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
-<script src="js/utils.js"></script>
-<script src="js/components/toast.js"></script>
-<script src="js/components/loading.js"></script>
-<script src="js/pages/dashboard.js"></script>
-```
+**CSS específico:** `avaliacoes.css`
 
 ---
 
-## Checklist de Implementação
+### 9.4. Nine Box (pages/nine-box.html)
 
-- [ ] Criar `js/validators.js`
-- [ ] Adicionar CSS de validação
-- [ ] Criar `js/pages/cadastrar.js`
-- [ ] Integrar cadastro com API
-- [ ] Testar cadastro de gestor
-- [ ] Testar cadastro de colaborador
-- [ ] Testar upload de foto
-- [ ] Criar `js/pages/consultar.js`
-- [ ] Adicionar CSS de cards de pessoa
-- [ ] Integrar consulta com API
-- [ ] Testar filtros
-- [ ] Testar busca
-- [ ] Testar exclusão
-- [ ] Criar `js/pages/dashboard.js`
-- [ ] Integrar dashboard com API
-- [ ] Testar dashboard
-- [ ] Documentar no README
+**Estrutura:**
+- Painel lateral (apenas gestor/admin):
+  - Select de pessoa
+  - Botões de Performance (Baixo/Médio/Alto)
+  - Botões de Potential (Baixo/Médio/Alto)
+  - Preview da categoria
+  - Comentário opcional
+  - Botão salvar
+- Grid 3x3 com categorias:
+  - Cada célula mostra pessoas posicionadas
+  - Cores diferentes por categoria
+  - Filtros: Todos / Gestores / Colaboradores
+- Modal de detalhes ao clicar em pessoa
 
----
-
-## Como Testar
-
-### 1. Testar Cadastro
-1. Abrir `pages/cadastrar.html`
-2. Preencher formulário
-3. Tentar enviar com dados inválidos (ver erros)
-4. Preencher corretamente e enviar
-5. Verificar se aparece no backend
-
-### 2. Testar Consulta
-1. Abrir `pages/consultar.html`
-2. Ver lista de pessoas
-3. Testar filtros (Todos, Gestores, Colaboradores)
-4. Testar busca por nome
-5. Testar exclusão (se for gestor)
-
-### 3. Testar Dashboard
-1. Abrir `index.html`
-2. Ver estatísticas
-3. Verificar se números estão corretos
-
----
-
-Qualquer dúvida, chama.
-
-
----
-
-### TAREFA 5: Implementar Edição de Usuários
-
-#### 5.1 Adicionar método update no api.js
-
-Arquivo: `js/api.js` (adicionar método)
-
+**Categorias e cores:**
 ```javascript
-class API {
-  // ... métodos existentes ...
-
-  async updateUser(id, userData) {
-    return this.request(`/users/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(userData),
-    });
-  }
-
-  async updateProfile(userData) {
-    return this.request('/users/profile', {
-      method: 'PUT',
-      body: JSON.stringify(userData),
-    });
-  }
-
-  async updateEvaluation(id, data) {
-    return this.request(`/evaluations/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateNineBox(id, data) {
-    return this.request(`/ninebox/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-
-  async updateCompetency(id, data) {
-    return this.request(`/competencies/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  }
-}
+const CATEGORIAS = {
+  '3-3': { nome: 'Superstar', icon: '🚀', cor: '#bbf7d0' },
+  '2-3': { nome: 'Estrela', icon: '⭐', cor: '#bfdbfe' },
+  '1-3': { nome: 'Enigma', icon: '🔮', cor: '#fed7aa' },
+  '3-2': { nome: 'Especialista', icon: '🎯', cor: '#e9d5ff' },
+  '2-2': { nome: 'Núcleo', icon: '💎', cor: '#e2e8f0' },
+  '1-2': { nome: 'Dilema', icon: '🤔', cor: '#fef3c7' },
+  '3-1': { nome: 'Âncora', icon: '⚓', cor: '#a7f3d0' },
+  '2-1': { nome: 'Trabalhador', icon: '⚙️', cor: '#fce7f3' },
+  '1-1': { nome: 'Questão', icon: '❓', cor: '#fecaca' }
+};
 ```
 
----
-
-#### 5.2 Criar modal de edição
-
-**Adicionar no HTML (exemplo: `pages/consultar.html`):**
-
-```html
-<!-- Modal de Edição -->
-<div id="modal-editar" class="modal" style="display:none">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Editar Usuário</h3>
-      <button class="modal-close" onclick="fecharModalEditar()">
-        <i class="fa-solid fa-times"></i>
-      </button>
-    </div>
-    
-    <div class="modal-body">
-      <div class="pg-field">
-        <label for="edit-nome">Nome completo *</label>
-        <input type="text" id="edit-nome" placeholder="Digite o nome completo">
-      </div>
-
-      <div class="pg-field">
-        <label for="edit-email">E-mail *</label>
-        <input type="email" id="edit-email" placeholder="nome@empresa.com">
-      </div>
-
-      <div class="pg-field">
-        <label for="edit-cargo">Cargo</label>
-        <input type="text" id="edit-cargo" placeholder="Ex: Analista, Desenvolvedor">
-      </div>
-
-      <div class="pg-field">
-        <label for="edit-departamento">Departamento</label>
-        <input type="text" id="edit-departamento" placeholder="Ex: TI, RH, Financeiro">
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button class="pg-btn secondary" onclick="fecharModalEditar()">Cancelar</button>
-      <button class="pg-btn" onclick="salvarEdicao()">Salvar</button>
-    </div>
-  </div>
-</div>
-```
-
-**CSS do Modal (adicionar em `css/components.css`):**
-
-```css
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px);
-}
-
-.modal-content {
-  background: var(--surface);
-  border-radius: var(--radius);
-  width: 90%;
-  max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid var(--border);
-}
-
-.modal-header h3 {
-  margin: 0;
-  color: var(--primary);
-  font-size: 18px;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  font-size: 20px;
-  padding: 4px 8px;
-  transition: color 0.2s;
-}
-
-.modal-close:hover {
-  color: var(--danger);
-}
-
-.modal-body {
-  padding: 20px;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  padding: 20px;
-  border-top: 1px solid var(--border);
-}
-
-.pg-btn.secondary {
-  background: var(--border);
-  color: var(--text);
-}
-
-.pg-btn.secondary:hover {
-  background: var(--text-muted);
-}
-```
-
----
-
-#### 5.3 Implementar lógica de edição
-
-**Adicionar em `js/pages/consultar.js`:**
-
+**Lógica:**
 ```javascript
-let usuarioEditando = null;
+import { isGestorOrAdmin } from '../js/auth.js';
+import { nineBoxApi, usersApi } from '../js/api.js';
 
-// Abrir modal de edição
-function abrirModalEditar(id) {
-  const pessoa = pessoas.find(p => p.id === id);
-  if (!pessoa) {
-    toast.error('Pessoa não encontrada');
-    return;
-  }
-
-  usuarioEditando = pessoa;
-
-  // Preencher campos
-  document.getElementById('edit-nome').value = pessoa.nome;
-  document.getElementById('edit-email').value = pessoa.email;
-  document.getElementById('edit-cargo').value = pessoa.cargo || '';
-  document.getElementById('edit-departamento').value = pessoa.departamento || '';
-
-  // Mostrar modal
-  document.getElementById('modal-editar').style.display = 'flex';
+// Ocultar painel para colaboradores
+if (!isGestorOrAdmin()) {
+  document.getElementById('nb-panel').style.display = 'none';
 }
 
-// Fechar modal
-function fecharModalEditar() {
-  document.getElementById('modal-editar').style.display = 'none';
-  usuarioEditando = null;
-}
+let nbPerf = null;
+let nbPot = null;
 
-// Salvar edição
-async function salvarEdicao() {
-  if (!usuarioEditando) return;
+window.selectAxis = function(axis, val) {
+  if (axis === 'perf') nbPerf = val;
+  else nbPot = val;
+  atualizarPreview();
+};
 
-  const nome = document.getElementById('edit-nome').value.trim();
-  const email = document.getElementById('edit-email').value.trim();
-  const cargo = document.getElementById('edit-cargo').value.trim();
-  const departamento = document.getElementById('edit-departamento').value.trim();
+window.salvarNB = async function() {
+  const payload = {
+    pessoaId: document.getElementById('nb-pessoa').value,
+    performance: nbPerf,
+    potential: nbPot,
+    comentario: document.getElementById('nb-comentario').value.trim() || null
+  };
 
-  // Validar campos
-  if (!nome) {
-    toast.error('Nome é obrigatório');
-    return;
-  }
+  await nineBoxApi.create(payload);
+  showToast('Posição salva no Nine Box!', 'success');
+  carregarGrid();
+};
 
-  if (!email) {
-    toast.error('Email é obrigatório');
-    return;
-  }
-
-  if (!validators.email(email)) {
-    toast.error('Email inválido');
-    return;
-  }
-
-  try {
-    loading.show('Salvando...');
-
-    const userData = {
-      nome,
-      email,
-      cargo,
-      departamento
-    };
-
-    // Chamar API para atualizar
-    await api.updateUser(usuarioEditando.id, userData);
-
-    toast.success('Usuário atualizado com sucesso!');
-    
-    // Fechar modal
-    fecharModalEditar();
-
-    // Recarregar lista
-    carregarPessoas();
-
-  } catch (error) {
-    console.error('Erro ao atualizar:', error);
-    toast.error(error.message || 'Erro ao atualizar usuário');
-  } finally {
-    loading.hide();
-  }
+async function carregarGrid() {
+  const res = await nineBoxApi.list({ limit: 200 });
+  renderGrid(res.data.nineBoxes);
 }
 ```
 
+**CSS específico:** `nine-box.css`
+
 ---
 
-#### 5.4 Adicionar botão de editar na listagem
+### 9.5. Competências (pages/competencias.html)
 
-**Atualizar função `renderPessoas()` em `js/pages/consultar.js`:**
+**Estrutura:**
+- Tela de lista (todos podem ver)
+- Tela de formulário (apenas admin pode criar/editar)
 
+**Lista:**
+- Cards de competências com:
+  - Nome
+  - Descrição
+  - Badges (tipo, competência de)
+  - Critérios listados
+  - Botões editar/deletar (apenas admin)
+
+**Formulário:**
+- Nome da competência
+- Competência de (Gestor / Colaborador / Todos)
+- Tipo (Desempenho / Comportamento / Técnica / Liderança)
+- Descrição
+- 4 critérios de avaliação
+- Escala de notas (1-4)
+
+**Lógica:**
 ```javascript
-function renderPessoas() {
-  const container = document.getElementById('lista-pessoas');
-  if (!container) return;
+import { requireAuth, isAdmin } from '../js/auth.js';
+import { competenciesApi } from '../js/api.js';
 
-  if (pessoas.length === 0) {
-    container.innerHTML = '<p class="pg-empty">Nenhuma pessoa encontrada.</p>';
-    return;
-  }
+requireAuth();
 
-  container.innerHTML = pessoas.map(pessoa => `
-    <div class="pg-pessoa-card">
-      <div class="pg-pessoa-avatar">
-        ${pessoa.foto 
-          ? `<img src="${pessoa.foto}" alt="${pessoa.nome}">`
-          : `<span>${utils.getInitials(pessoa.nome)}</span>`
-        }
-      </div>
-      <div class="pg-pessoa-info">
-        <h4>${pessoa.nome}</h4>
-        <p class="pg-pessoa-email">${pessoa.email}</p>
-        <p class="pg-pessoa-ra">RA: ${pessoa.ra}</p>
-        <span class="pg-pessoa-badge ${pessoa.tipo}">${pessoa.tipo === 'gestor' ? 'Gestor' : 'Colaborador'}</span>
-      </div>
-      <div class="pg-pessoa-actions">
-        <button class="pg-btn-icon" onclick="verPerfil('${pessoa.id}')" title="Ver perfil">
-          <i class="fa-solid fa-eye"></i>
-        </button>
-        ${auth.isGestorOrAdmin() ? `
-          <button class="pg-btn-icon" onclick="abrirModalEditar('${pessoa.id}')" title="Editar">
-            <i class="fa-solid fa-edit"></i>
-          </button>
-        ` : ''}
-        ${auth.isAdmin() ? `
-          <button class="pg-btn-icon danger" onclick="confirmarExclusao('${pessoa.id}', '${pessoa.nome}')" title="Excluir">
-            <i class="fa-solid fa-trash"></i>
-          </button>
-        ` : ''}
-      </div>
-    </div>
-  `).join('');
+// Exibir botão "Nova" apenas para admin
+if (isAdmin()) {
+  document.getElementById('btn-nova-comp').style.display = 'flex';
 }
+
+let editandoId = null;
+
+window.abrirFormulario = function(id = null) {
+  editandoId = id;
+  document.getElementById('tela-lista').style.display = 'none';
+  document.getElementById('tela-form').style.display = 'block';
+  
+  if (id) {
+    // Carregar dados da competência para edição
+    const comp = todasCompetencias.find(c => c.id === id);
+    preencherFormulario(comp);
+  }
+};
+
+window.salvarCompetencia = async function() {
+  const dados = {
+    nome: document.getElementById('comp-nome').value.trim(),
+    descricao: document.getElementById('comp-descricao').value.trim(),
+    competenciaDe: document.getElementById('comp-de').value,
+    tipo: document.getElementById('comp-tipo').value,
+    criterios: Array.from(document.querySelectorAll('#comp-criterios-grid textarea'))
+      .map(t => t.value.trim()).filter(Boolean)
+  };
+
+  if (editandoId) {
+    await competenciesApi.update(editandoId, dados);
+  } else {
+    await competenciesApi.create(dados);
+  }
+  
+  fecharFormulario();
+  carregarCompetencias();
+};
 ```
 
+**CSS específico:** `competencias.css`
+
 ---
 
-#### 5.5 Implementar edição de perfil próprio
+### 9.6. Perfil (perfil.html)
 
-**Criar `js/pages/perfil.js`:**
+**Estrutura:**
+- Sidebar:
+  - Foto (clicável para trocar)
+  - Nome
+  - Badge de tipo
+  - Stats (RA, avaliações recebidas, média geral)
+- Main com tabs:
+  - Tab "Dados": editar nome, cargo, departamento
+  - Tab "Avaliações recebidas": lista de avaliações
+  - Tab "Senha": alterar senha
 
+**Lógica:**
 ```javascript
-// js/pages/perfil.js
+import { requireAuth, getUser, setUser } from './js/auth.js';
+import { usersApi, reportsApi } from './js/api.js';
 
-let modoEdicao = false;
+requireAuth();
+
+const user = getUser();
 
 async function carregarPerfil() {
-  try {
-    loading.show('Carregando perfil...');
-
-    const response = await api.getProfile();
-    const user = response.data;
-
-    // Preencher dados
-    document.getElementById('perfil-nome').textContent = user.nome;
-    document.getElementById('perfil-email').textContent = user.email;
-    document.getElementById('perfil-ra').textContent = user.ra;
-    document.getElementById('perfil-tipo').textContent = user.tipo === 'gestor' ? 'Gestor' : 'Colaborador';
-    document.getElementById('perfil-cargo').textContent = user.cargo || '-';
-    document.getElementById('perfil-departamento').textContent = user.departamento || '-';
-
-    // Avatar
-    const avatar = document.getElementById('perfil-avatar');
-    if (user.foto) {
-      avatar.innerHTML = `<img src="${user.foto}" alt="${user.nome}">`;
-    } else {
-      avatar.innerHTML = utils.getInitials(user.nome);
-    }
-
-  } catch (error) {
-    console.error('Erro ao carregar perfil:', error);
-    toast.error('Erro ao carregar perfil');
-  } finally {
-    loading.hide();
-  }
+  const res = await usersApi.getProfile();
+  renderPerfil(res.data);
 }
 
-function ativarEdicao() {
-  modoEdicao = true;
+window.salvarPerfil = async function() {
+  const dados = {
+    nome: document.getElementById('pf-nome').value.trim(),
+    cargo: document.getElementById('pf-cargo').value.trim(),
+    departamento: document.getElementById('pf-departamento').value.trim()
+  };
 
-  // Transformar textos em inputs
-  const nome = document.getElementById('perfil-nome').textContent;
-  const cargo = document.getElementById('perfil-cargo').textContent;
-  const departamento = document.getElementById('perfil-departamento').textContent;
+  await usersApi.updateProfile(dados);
+  setUser({ ...user, ...dados });
+  showToast('Perfil atualizado!', 'success');
+};
 
-  document.getElementById('perfil-nome').innerHTML = `<input type="text" id="edit-perfil-nome" value="${nome}">`;
-  document.getElementById('perfil-cargo').innerHTML = `<input type="text" id="edit-perfil-cargo" value="${cargo === '-' ? '' : cargo}">`;
-  document.getElementById('perfil-departamento').innerHTML = `<input type="text" id="edit-perfil-departamento" value="${departamento === '-' ? '' : departamento}">`;
+window.salvarSenha = async function() {
+  const nova = document.getElementById('pf-senha-nova').value;
+  const confirmar = document.getElementById('pf-senha-confirmar').value;
 
-  // Mostrar botões de salvar/cancelar
-  document.getElementById('btn-editar').style.display = 'none';
-  document.getElementById('btn-salvar').style.display = 'inline-block';
-  document.getElementById('btn-cancelar').style.display = 'inline-block';
-}
-
-function cancelarEdicao() {
-  modoEdicao = false;
-  carregarPerfil();
-
-  // Mostrar botão de editar
-  document.getElementById('btn-editar').style.display = 'inline-block';
-  document.getElementById('btn-salvar').style.display = 'none';
-  document.getElementById('btn-cancelar').style.display = 'none';
-}
-
-async function salvarPerfil() {
-  const nome = document.getElementById('edit-perfil-nome').value.trim();
-  const cargo = document.getElementById('edit-perfil-cargo').value.trim();
-  const departamento = document.getElementById('edit-perfil-departamento').value.trim();
-
-  if (!nome) {
-    toast.error('Nome é obrigatório');
+  if (nova !== confirmar) {
+    showToast('As senhas não coincidem.', 'error');
     return;
   }
 
-  try {
-    loading.show('Salvando...');
+  await usersApi.updateProfile({ senha: nova });
+  showToast('Senha alterada com sucesso!', 'success');
+};
 
-    const userData = {
-      nome,
-      cargo: cargo || null,
-      departamento: departamento || null
-    };
-
-    await api.updateProfile(userData);
-
-    toast.success('Perfil atualizado com sucesso!');
-    
-    modoEdicao = false;
-    carregarPerfil();
-
-    // Mostrar botão de editar
-    document.getElementById('btn-editar').style.display = 'inline-block';
-    document.getElementById('btn-salvar').style.display = 'none';
-    document.getElementById('btn-cancelar').style.display = 'none';
-
-  } catch (error) {
-    console.error('Erro ao salvar perfil:', error);
-    toast.error(error.message || 'Erro ao salvar perfil');
-  } finally {
-    loading.hide();
-  }
+async function carregarAvaliacoes() {
+  const res = await reportsApi.user(user.id);
+  renderAvaliacoes(res.data.avaliacoesRecebidas.lista);
 }
-
-// Carregar ao iniciar
-document.addEventListener('DOMContentLoaded', () => {
-  if (!auth.requireAuth()) return;
-  carregarPerfil();
-});
 ```
 
 ---
 
-## Resumo - Operações CRUD Completas
+### 9.7. Relatórios (pages/relatorios.html)
 
-Agora o frontend tem **todas as operações CRUD**:
+**Estrutura com tabs (baseado em permissão):**
 
-### ✅ CREATE (Criar)
-- `api.register(userData)` - Cadastrar usuário
-- `api.createEvaluation(data)` - Criar avaliação
-- `api.createNineBox(data)` - Criar Nine Box
-- `api.createCompetency(data)` - Criar competência
+**Tab "Dashboard" (gestor/admin):**
+- Cards de stats:
+  - Total de usuários
+  - Total de gestores
+  - Total de colaboradores
+  - Total de avaliações
+  - Média geral
+  - Total Nine Box
+- Grid de distribuição Nine Box (3x3)
 
-### ✅ READ (Ler)
-- `api.getUsers(filters)` - Listar usuários
-- `api.getUserByRA(ra)` - Buscar por RA
-- `api.getProfile()` - Ver perfil
-- `api.getEvaluations(filters)` - Listar avaliações
-- `api.getDashboard()` - Dashboard
+**Tab "Por Usuário" (gestor/admin):**
+- Select de usuário
+- Botão "Ver Relatório"
+- Exibe:
+  - Dados do usuário
+  - Stats (avaliações recebidas, média, avaliações feitas)
+  - Posição Nine Box
+  - Lista de avaliações recebidas
+  - Botão exportar
 
-### ✅ UPDATE (Atualizar)
-- `api.updateUser(id, userData)` - Atualizar usuário
-- `api.updateProfile(userData)` - Atualizar perfil próprio
-- `api.updateEvaluation(id, data)` - Atualizar avaliação
-- `api.updateNineBox(id, data)` - Atualizar Nine Box
-- `api.updateCompetency(id, data)` - Atualizar competência
+**Tab "Meu Relatório" (todos):**
+- Mesmo formato do relatório por usuário
+- Carrega automaticamente o usuário logado
 
-### ✅ DELETE (Deletar)
-- `api.deleteUser(id)` - Deletar usuário
-- `api.deleteEvaluation(id)` - Deletar avaliação
-- `api.deleteNineBox(id)` - Deletar Nine Box
-- `api.deleteCompetency(id)` - Deletar competência
+**Lógica:**
+```javascript
+import { requireAuth, getUser, isGestorOrAdmin } from '../js/auth.js';
+import { usersApi, reportsApi } from '../js/api.js';
 
-**Frontend completo com CRUD total!** 🚀
+requireAuth();
+
+const user = getUser();
+
+// Montar tabs conforme permissão
+const tabs = [];
+if (isGestorOrAdmin()) {
+  tabs.push({ id: 'dashboard', label: 'Dashboard' });
+  tabs.push({ id: 'usuario', label: 'Por Usuário' });
+}
+tabs.push({ id: 'meu', label: 'Meu Relatório' });
+
+async function carregarDashboard() {
+  const res = await reportsApi.dashboard();
+  renderDashboard(res.data);
+}
+
+window.carregarRelatorioUsuario = async function() {
+  const userId = document.getElementById('sel-usuario').value;
+  const res = await reportsApi.user(userId);
+  renderRelatorioUsuario(res.data);
+};
+
+async function carregarMeuRelatorio() {
+  const res = await reportsApi.user(user.id);
+  renderRelatorioUsuario(res.data, true);
+}
+
+window.exportarRelatorio = async function(userId) {
+  const res = await reportsApi.export(userId);
+  // Criar blob e download
+  const blob = new Blob([JSON.stringify(res.data, null, 2)], 
+    { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `relatorio-${userId}-${Date.now()}.json`;
+  a.click();
+};
+```
+
+---
+
+### 9.8. Avaliação 180° (pages/avaliacao-180.html)
+
+**Objetivo:**
+Sistema de avaliação 180° onde gestores avaliam colaboradores de forma estruturada, vinculando avaliados e competências específicas.
+
+**Estrutura em 2 telas:**
+
+**Tela 1: Lista de Avaliações 180°**
+- Header com título e botão "Nova Avaliação" (apenas gestor/admin)
+- Cards de avaliações existentes com:
+  - Ícone de avaliação 180°
+  - Nome do avaliado
+  - Tipo e data
+  - Badges (180°, Média, Anônima)
+- Estado vazio quando não há avaliações
+
+**Tela 2: Formulário de Criação/Edição**
+- **Resumo da avaliação:**
+  - Nome da avaliação
+  - Empresa
+  - Gestor responsável (select)
+  - Setor
+  - Datas de início e fim
+  - Descrição
+
+- **Avaliados:**
+  - Botão "Adicionar" abre modal com lista de colaboradores
+  - Checkbox para selecionar múltiplos avaliados
+  - Lista de avaliados selecionados com opção de remover
+
+- **Competências avaliadas:**
+  - Botão "Adicionar" abre modal com lista de competências
+  - Busca por nome/descrição
+  - Lista de competências selecionadas com opção de remover
+
+- **Ações:**
+  - Botão "Voltar"
+  - Botão "Criar Avaliação" / "Salvar Alterações"
+
+**Modais:**
+
+**Modal de Avaliados:**
+- Barra de seleção com "Selecionar Todos"
+- Lista de colaboradores com:
+  - Avatar
+  - Nome
+  - RA
+  - Checkbox
+- Botões "Cancelar" e "Confirmar"
+
+**Modal de Competências:**
+- Campo de busca
+- Lista de competências com:
+  - Ícone
+  - Nome
+  - Tipo (badge)
+  - Descrição
+  - Checkbox
+- Botões "Cancelar" e "Confirmar"
+
+**Lógica:**
+```javascript
+import { requireAuth, isGestorOrAdmin, getUser } from '../js/auth.js';
+import { usersApi, evaluationsApi, competenciesApi } from '../js/api.js';
+import { showToast } from '../js/components/toast.js';
+
+requireAuth();
+
+const user = getUser();
+let editandoId = null;
+let avaliados180 = [];
+let avaliadosSelecionados = [];
+let competenciasSelecionadas = [];
+let todosColaboradores = [];
+let todasCompetencias = [];
+
+// Oculta botão nova para colaboradores
+if (!isGestorOrAdmin()) {
+  document.getElementById('btn-nova-180').style.display = 'none';
+}
+
+// Carrega dados necessários
+async function init() {
+  try {
+    const [resUsers, resComps] = await Promise.all([
+      usersApi.list({ tipo: 'colaborador', limit: 200 }),
+      competenciesApi.list({ limit: 100 })
+    ]);
+    todosColaboradores = resUsers.data.users;
+    todasCompetencias = resComps.data.competencies;
+  } catch {}
+
+  // Carrega gestores para o select
+  try {
+    const resGestores = await usersApi.list({ tipo: 'gestor', limit: 100 });
+    const sel = document.getElementById('r180-gestor');
+    sel.innerHTML = '<option value="">Selecione o gestor...</option>' +
+      resGestores.data.users.map(g => 
+        `<option value="${g.id}">${g.nome}</option>`
+      ).join('');
+  } catch {}
+
+  // Carrega avaliações 180 existentes
+  try {
+    const res = await evaluationsApi.list({ 
+      tipoAvaliacao: 'avaliacao_180', 
+      limit: 100 
+    });
+    avaliados180 = res.data.evaluations;
+  } catch {}
+
+  renderLista();
+}
+
+// Salvar: cria uma avaliação 180 para cada avaliado
+window.salvarAvaliacao180 = async function() {
+  const nome = document.getElementById('r180-nome').value.trim();
+  const empresa = document.getElementById('r180-empresa').value.trim();
+  const gestorId = document.getElementById('r180-gestor').value;
+
+  if (!nome) { 
+    showToast('Digite o nome da avaliação.', 'error'); 
+    return; 
+  }
+  if (!empresa) { 
+    showToast('Digite o nome da empresa.', 'error'); 
+    return; 
+  }
+  if (!avaliadosSelecionados.length) { 
+    showToast('Adicione pelo menos um avaliado.', 'error'); 
+    return; 
+  }
+
+  const btn = document.getElementById('btn-salvar-180');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Salvando...';
+
+  try {
+    // Cria uma avaliação 180 para cada avaliado selecionado
+    const promises = avaliadosSelecionados.map(avaliado =>
+      evaluationsApi.create({
+        avaliadoId: avaliado.id,
+        criterios: { 
+          pontualidade: 0, 
+          comunicacao: 0, 
+          tecnico: 0, 
+          proatividade: 0, 
+          equipe: 0 
+        },
+        comentario: `Avaliação 180° — ${nome} — ${empresa}`,
+        anonima: true,
+        tipoAvaliacao: 'avaliacao_180',
+      })
+    );
+    await Promise.all(promises);
+    showToast(
+      `Avaliação 180° criada para ${avaliadosSelecionados.length} avaliado(s)!`, 
+      'success'
+    );
+    fecharFormulario();
+    await init();
+  } catch {}
+  finally { 
+    btn.disabled = false; 
+    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ' +
+      '<span id="r180-btn-texto">Criar Avaliação</span>'; 
+  }
+};
+
+init();
+```
+
+**CSS específico:** `avaliacao-180.css`
+
+**Regras de permissão:**
+- Apenas `gestor` e `admin` podem criar avaliações 180°
+- `colaborador` pode apenas visualizar avaliações que o envolvem
+- Botão "Nova Avaliação" oculto para colaboradores
+
+---
+
+### 9.9. Avaliação 360° (pages/avaliacao-360.html)
+
+**Objetivo:**
+Sistema de avaliação 360° exclusivo para administradores, permitindo avaliar qualquer usuário (gestor ou colaborador) com critérios completos e anonimato.
+
+**Estrutura em 3 etapas:**
+
+**Etapa 1: Seleção do Tipo**
+- Card "Avaliar Gestor"
+- Card "Avaliar Colaborador"
+- Card "Ver Histórico 360°"
+- Informação destacada: "Avaliação 360° — Exclusiva para administradores"
+
+**Etapa 2: Formulário de Avaliação**
+- Select de quem avaliar (filtrado por tipo selecionado)
+- Critérios com estrelas (1-5):
+  - Pontualidade
+  - Comunicação
+  - Desempenho Técnico
+  - Proatividade
+  - Trabalho em Equipe
+- Média geral calculada automaticamente
+- Comentário opcional
+- Histórico lateral com avaliações 360° recentes
+- Botões "Voltar" e "Enviar Avaliação 360°"
+
+**Etapa 3: Histórico Completo**
+- Lista todas as avaliações 360° do sistema
+- Exibe:
+  - Nome do avaliado
+  - Badge "360°"
+  - Badge "Anônima"
+  - Data
+  - Critérios avaliados com estrelas
+  - Média geral
+  - Comentário
+- Botão "Voltar"
+
+**Lógica:**
+```javascript
+import { requireRole, getUser } from '../js/auth.js';
+import { usersApi, evaluationsApi } from '../js/api.js';
+import { showToast } from '../js/components/toast.js';
+
+// 360° é exclusiva para admin
+requireRole('admin');
+
+const user = getUser();
+const notas = { 
+  pontualidade: 0, 
+  comunicacao: 0, 
+  tecnico: 0, 
+  proatividade: 0, 
+  equipe: 0 
+};
+let tipoSelecionado = null;
+let avaliacoes360 = [];
+
+window.selecionarTipo360 = function(tipo) {
+  tipoSelecionado = tipo;
+  document.querySelectorAll('.av-tipo-card').forEach(c => 
+    c.classList.toggle('selected', c.dataset.tipo === tipo)
+  );
+  document.getElementById('btn-proximo-360').disabled = false;
+};
+
+window.irParaFormulario360 = async function() {
+  if (!tipoSelecionado) return;
+  
+  if (tipoSelecionado === 'historico') {
+    document.getElementById('step-tipo').style.display = 'none';
+    document.getElementById('step-historico').style.display = 'flex';
+    carregarHistorico360Full();
+    return;
+  }
+  
+  document.getElementById('step-tipo').style.display = 'none';
+  document.getElementById('step-form').style.display = 'block';
+
+  const label = document.getElementById('av360-avaliado-label');
+  label.textContent = tipoSelecionado === 'gestor' 
+    ? 'Gestor a avaliar' 
+    : 'Colaborador a avaliar';
+
+  // Carrega usuários do tipo selecionado
+  const select = document.getElementById('av360-avaliado');
+  select.innerHTML = '<option value="">Carregando...</option>';
+  
+  try {
+    const res = await usersApi.list({ 
+      tipo: tipoSelecionado, 
+      limit: 200 
+    });
+    const users = res.data.users.filter(u => u.id !== user.id);
+    
+    if (!users.length) { 
+      select.innerHTML = 
+        `<option value="">Nenhum ${tipoSelecionado} disponível</option>`; 
+      return; 
+    }
+    
+    select.innerHTML = '<option value="">Selecione...</option>' +
+      users.map(u => 
+        `<option value="${u.id}">${u.nome} (RA: ${u.ra})</option>`
+      ).join('');
+  } catch { 
+    select.innerHTML = '<option value="">Erro ao carregar</option>'; 
+  }
+
+  initStars();
+  carregarHistorico360();
+};
+
+window.enviarAvaliacao360 = async function() {
+  const avaliadoId = document.getElementById('av360-avaliado').value;
+  const comentario = document.getElementById('comentario-360').value.trim();
+  
+  if (!avaliadoId) { 
+    showToast('Selecione quem será avaliado.', 'error'); 
+    return; 
+  }
+  
+  if (!Object.values(notas).some(v => v > 0)) { 
+    showToast('Avalie pelo menos um critério.', 'error'); 
+    return; 
+  }
+
+  const btn = document.getElementById('btn-submit-360');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enviando...';
+  
+  try {
+    await evaluationsApi.create({ 
+      avaliadoId, 
+      criterios: {...notas}, 
+      comentario: comentario || null, 
+      anonima: true 
+    });
+    showToast('Avaliação 360° enviada com sucesso!', 'success');
+    
+    // Limpar formulário
+    Object.keys(notas).forEach(k => notas[k] = 0);
+    document.querySelectorAll('.stars span').forEach(s => 
+      s.classList.remove('active')
+    );
+    document.getElementById('av360-avaliado').value = '';
+    document.getElementById('comentario-360').value = '';
+    document.getElementById('media-box-360').style.display = 'none';
+    
+    carregarHistorico360();
+  } catch {}
+  finally { 
+    btn.disabled = false; 
+    btn.innerHTML = 
+      '<i class="fa-solid fa-paper-plane"></i> Enviar Avaliação 360°'; 
+  }
+};
+
+async function carregarHistorico360() {
+  const container = document.getElementById('historico-360');
+  container.innerHTML = '<p class="av-empty">Carregando...</p>';
+  
+  try {
+    const res = await evaluationsApi.list({ 
+      tipoAvaliacao: 'avaliacao_360', 
+      limit: 50 
+    });
+    avaliacoes360 = res.data.evaluations;
+    renderHistorico(avaliacoes360, container);
+  } catch { 
+    container.innerHTML = '<p class="av-empty">Erro ao carregar.</p>'; 
+  }
+}
+```
+
+**CSS específico:** `avaliacoes.css` (reutiliza estilos da página de avaliações)
+
+**Regras de permissão:**
+- **EXCLUSIVO para `admin`**
+- Admin pode avaliar qualquer usuário (gestor ou colaborador)
+- Avaliações são sempre anônimas
+- O avaliador não é revelado ao avaliado
+- Tipo de avaliação é automaticamente definido como `avaliacao_360`
+
+**Diferenças entre 180° e 360°:**
+- **180°**: Gestor avalia colaborador de forma estruturada com competências
+- **360°**: Admin avalia qualquer usuário com critérios completos
+- **180°**: Pode vincular múltiplos avaliados e competências
+- **360°**: Avalia um usuário por vez com critérios fixos
+
+---
+
+## Padrões obrigatórios de implementação
+
+### Loading state
+
+Toda action assíncrona relevante precisa:
+
+1. mostrar loading
+2. desabilitar botão de envio quando fizer sentido
+3. ocultar loading no `finally`
+
+```javascript
+async function salvar() {
+  try {
+    loading.show('Salvando...');
+    btnSalvar.disabled = true;
+    await api.createEvaluation(payload);
+    toast.success('Avaliação criada com sucesso!');
+  } catch (error) {
+    toast.error(error.message);
+  } finally {
+    loading.hide();
+    btnSalvar.disabled = false;
+  }
+}
+```
+
+### Tratamento de erro
+
+Toda página deve tratar:
+
+- backend offline → `Não foi possível conectar ao backend.`
+- `401` sessão expirada → logout automático + redirect para login
+- `403` sem permissão → `Você não tem permissão para acessar esta página.`
+- validação inválida → exibir mensagem do backend
+- erro inesperado → mensagem genérica amigável
+
+### Sessão expirada
+
+Se a API retornar `401`:
+
+- limpar sessão
+- redirecionar para login
+- avisar o usuário com toast
+
+---
+
+## Checklist de reescrita do legado
+
+- [ ] remover uso de `professor` no JS/HTML/CSS
+- [ ] remover uso de `estagiario` no JS/HTML/CSS
+- [ ] remover dependência de `disciplina`
+- [ ] adicionar campo `RA` nas telas necessárias (cadastro, consulta)
+- [ ] trocar renderização baseada em `localStorage` por API
+- [ ] aplicar `auth.requireAuth()` nas telas privadas
+- [ ] aplicar `auth.requireAdmin()` nas telas administrativas (cadastro, exclusão)
+- [ ] aplicar `auth.requireGestorOrAdmin()` nas telas estratégicas (dashboard, Nine Box)
+- [ ] conectar dashboard com `GET /api/reports/dashboard`
+- [ ] conectar perfil com `GET /api/users/profile` e `PUT /api/users/profile`
+- [ ] conectar avaliações com `/api/evaluations`
+- [ ] conectar Nine Box com `/api/evaluations/nine-box`
+- [ ] conectar competências com `/api/competencies`
+- [ ] garantir que `avaliadorId` nunca aparece para usuário comum
+- [ ] garantir que tipo de avaliação é derivado do contexto, não digitado pelo usuário
+- [ ] implementar página de avaliação 180° (gestor/admin → colaborador)
+- [ ] implementar página de avaliação 360° (admin → qualquer usuário)
+- [ ] criar CSS específico para avaliação 180° (`avaliacao-180.css`)
+- [ ] criar CSS específico para responder 180° (`responder-180.css`)
+- [ ] adicionar links para 180° e 360° no submenu de Avaliações da navbar
+
+---
+
+## Critérios de aceite
+
+- não existe mais fluxo principal alimentado por arrays mock em `localStorage`
+- cadastro envia `ra` obrigatoriamente
+- frontend inteiro usa `gestor`, `colaborador` e `admin`
+- telas respeitam permissão por perfil
+- login é obrigatório nas páginas privadas
+- dashboard usa dados reais da API
+- perfil usa dados reais da API
+- avaliações usam o backend anônimo e bidirecional
+- `avaliadorId` não aparece para usuário comum
+- feedback visual de loading e erro está presente nas principais operações
+- Nine Box só pode ser criado por `gestor` ou `admin`
+- competências só podem ser criadas/editadas/deletadas por `admin`
+
+---
+
+## Handoff esperado
+
+Quando este trabalho acabar, o frontend deve estar pronto para operar com o backend sem camada fake local.
+
+Se ainda existir alguma tela antiga dependente de arrays mock, ela deve ser tratada como pendência e não como comportamento válido do sistema.

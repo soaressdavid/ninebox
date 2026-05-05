@@ -70,12 +70,13 @@ backend/
 ---
 
 ### Estagiário 2 - Avaliações
-- Avaliações tradicionais
+- Avaliações bidirecionais e anônimas
 - Sistema Nine Box
 - Estatísticas
 
-**Endpoints (10)**:
-- `POST /api/evaluations`
+**Endpoints (11)**:
+- `POST /api/evaluations` (todos autenticados, com validação de regra no service)
+- `POST /api/evaluations/comment` (todos autenticados, com validação de regra no service)
 - `GET /api/evaluations`
 - `GET /api/evaluations/:id`
 - `GET /api/evaluations/user/:userId`
@@ -104,8 +105,8 @@ backend/
 - `GET /api/competencies/types`
 - `GET /api/reports/dashboard`
 - `GET /api/reports/user/:userId`
-- `GET /api/reports/department/:dept`
-- `GET /api/reports/nine-box-summary`
+- `GET /api/reports/team/:gestorId`
+- `GET /api/reports/export/:userId`
 
 📖 Ver: [`docs/backend/ESTAGIARIO_3_COMPETENCIES.md`](backend/ESTAGIARIO_3_COMPETENCIES.md)
 
@@ -118,10 +119,11 @@ backend/
 **ADMIN**
 - Cadastrar/deletar usuários
 - Acesso total
+- **Ver quem avaliou quem (auditoria)**
 - Cada admin tem seu próprio RA
 
 **GESTOR**
-- Ver e avaliar colaboradores
+- **Avaliar colaboradores anonimamente**
 - Criar Nine Box
 - Ver relatórios da equipe
 - RA é o número que a pessoa já possui
@@ -129,6 +131,7 @@ backend/
 **COLABORADOR**
 - Ver próprio perfil
 - Ver próprias avaliações
+- **Avaliar gestores anonimamente**
 - Responder avaliações 180°
 - RA é o número que a pessoa já possui
 
@@ -139,13 +142,13 @@ Cada usuário tem um **RA único**.
 **Como funciona**:
 - Cada colaborador e gestor do ENIAC já tem seu RA
 - No cadastro, a pessoa informa o RA dela
-- Sistema valida o formato (5 a 15 caracteres) e se não está duplicado
+- Sistema valida o formato (5 a 10 caracteres) e se não está duplicado
 - Admin também tem RA próprio
 
 **Características**:
 - Único por usuário (constraint no banco)
 - Usado para busca: `GET /api/users/ra/:ra`
-- Validação: entre 5 e 15 caracteres
+- Validação: entre 5 e 10 caracteres
 - Não pode ser alterado após criação
 - É um dado que a pessoa já possui (como CPF)
 
@@ -173,20 +176,20 @@ isGestorOrAdminMiddleware  // Gestor ou admin
 | `GET /api/users/ra/:ra` | ✅ | ✅ | ✅ |
 | `DELETE /api/users/:id` | ✅ | ❌ | ❌ |
 
-#### 📊 Avaliações (Estagiário 2)
+#### Avaliações (Estagiário 2)
 
 | Endpoint | Admin | Gestor | Colaborador |
 |----------|-------|--------|-------------|
-| `POST /api/evaluations` | ✅ | ✅ | ❌ |
-| `POST /api/evaluations/comment` | ✅ | ✅ | ❌ |
+| `POST /api/evaluations` | ✅ (qualquer tipo) | ✅ (colaboradores) | ✅ (gestores) |
+| `POST /api/evaluations/comment` | ✅ (qualquer tipo) | ✅ (colaboradores) | ✅ (gestores) |
 | `POST /api/evaluations/nine-box` | ✅ | ✅ | ❌ |
-| `GET /api/evaluations` | ✅ (todas) | ✅ (equipe) | ✅ (próprias) |
-| `GET /api/evaluations/:id` | ✅ | ✅ (equipe) | ✅ (próprias) |
+| `GET /api/evaluations` | ✅ (todas) | ✅ (criadas + recebidas + equipe) | ✅ (criadas + recebidas) |
+| `GET /api/evaluations/:id` | ✅ | ✅ (se envolvido) | ✅ (se envolvido) |
 | `GET /api/evaluations/user/:userId` | ✅ | ✅ (equipe) | ✅ (próprias) |
 | `GET /api/evaluations/stats/:userId` | ✅ | ✅ (equipe) | ✅ (próprias) |
 | `GET /api/evaluations/nine-box` | ✅ (todas) | ✅ (equipe) | ✅ (próprias) |
-| `PUT /api/evaluations/:id` | ✅ | ✅ (criadas) | ❌ |
-| `DELETE /api/evaluations/:id` | ✅ | ✅ (criadas) | ❌ |
+| `PUT /api/evaluations/:id` | ✅ | ✅ (criadas) | ✅ (criadas) |
+| `DELETE /api/evaluations/:id` | ✅ | ✅ (criadas) | ✅ (criadas) |
 
 #### 🎯 Competências (Estagiário 3)
 
@@ -317,7 +320,7 @@ POST http://localhost:3000/api/users/login
 Content-Type: application/json
 
 {
-  "email": "admin@empresa.com",
+  "email": "admin@eniac.edu.br",
   "senha": "admin123"
 }
 ```

@@ -1503,40 +1503,22 @@ Authorization: Bearer SEU_TOKEN_GESTOR
 }
 ```
 
-**2. Meu relatório (qualquer usuário)**
-```
-GET http://localhost:3000/api/reports/me
-Authorization: Bearer SEU_TOKEN
-```
-
-**3. Relatório de um usuário específico (gestor/admin)**
+**2. Relatório de um usuário específico**
 ```
 GET http://localhost:3000/api/reports/user/uuid-do-usuario
 Authorization: Bearer SEU_TOKEN_GESTOR
 ```
 
-**4. Relatório de avaliações (gestor/admin)**
+**3. Relatório da equipe de um gestor**
 ```
-GET http://localhost:3000/api/reports/evaluations
+GET http://localhost:3000/api/reports/team/uuid-do-gestor
 Authorization: Bearer SEU_TOKEN_GESTOR
 ```
 
-**5. Relatório Nine Box (gestor/admin)**
+**4. Exportar relatório de um usuário**
 ```
-GET http://localhost:3000/api/reports/ninebox
+GET http://localhost:3000/api/reports/export/uuid-do-usuario
 Authorization: Bearer SEU_TOKEN_GESTOR
-```
-
-**6. Relatório de competências (gestor/admin)**
-```
-GET http://localhost:3000/api/reports/competencies
-Authorization: Bearer SEU_TOKEN_GESTOR
-```
-
-**7. Exportar todos os dados (apenas admin)**
-```
-GET http://localhost:3000/api/reports/export
-Authorization: Bearer SEU_TOKEN_ADMIN
 ```
 
 ---

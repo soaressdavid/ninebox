@@ -39,7 +39,7 @@ Você vai cuidar de todo o sistema de avaliações de desempenho do Portal de Ge
 ## Endpoints que você vai criar
 
 ### 1. POST /api/evaluations
-**Criar avaliação tradicional (APENAS GESTOR OU ADMIN)**
+**Criar avaliação tradicional (TODOS AUTENTICADOS) - ANÔNIMA**
 
 **Headers:**
 ```
@@ -50,7 +50,6 @@ Authorization: Bearer {token}
 ```json
 {
   "avaliadoId": "uuid-do-usuario",
-  "tipo": "gestor",
   "criterios": {
     "pontualidade": 5,
     "comunicacao": 4,
@@ -58,7 +57,8 @@ Authorization: Bearer {token}
     "proatividade": 4,
     "equipe": 5
   },
-  "comentario": "Excelente profissional"
+  "comentario": "Excelente profissional",
+  "anonima": true
 }
 ```
 
@@ -68,26 +68,42 @@ Authorization: Bearer {token}
   "success": true,
   "data": {
     "id": "uuid",
-    "avaliadorId": "uuid",
     "avaliadoId": "uuid",
-    "tipo": "gestor",
+    "tipoAvaliacao": "colaborador_para_gestor",
     "criterios": {...},
     "media": 4.6,
     "comentario": "Excelente profissional",
+    "anonima": true,
     "data": "2026-04-30T10:00:00.000Z"
   },
-  "message": "Avaliação criada com sucesso"
+  "message": "Avaliação anônima criada com sucesso"
 }
 ```
 
+**IMPORTANTE - Sistema Anônimo:**
+- ✅ **avaliadorId** é salvo no banco (controle interno)
+- ❌ **avaliadorId** NÃO é retornado na API (mantém anonimato)
+- ✅ **tipoAvaliacao** é determinado automaticamente pelo sistema
+- ✅ Avaliado vê a avaliação mas não sabe quem fez
+- ✅ Admin pode ver quem avaliou (para auditoria)
+
+**Tipos de Avaliação (determinados automaticamente):**
+- `"gestor_para_colaborador"` - Gestor avalia colaborador
+- `"colaborador_para_gestor"` - Colaborador avalia gestor
+- `"avaliacao_360"` - Admin avalia qualquer um
+
 **Regras de Permissão:**
-- ✅ Apenas gestor ou admin pode criar
-- ❌ Colaborador NÃO pode criar avaliações
+- ✅ **Gestor** pode avaliar colaboradores (anônimo)
+- ✅ **Colaborador** pode avaliar gestores (anônimo)
+- ✅ **Admin** pode criar qualquer tipo de avaliação
+- ❌ **Gestor NÃO pode** avaliar outro gestor (exceto admin)
+- ❌ **Colaborador NÃO pode** avaliar outro colaborador (exceto admin)
+- ❌ **Ninguém pode** se autoavaliar (exceto admin)
 
 ---
 
 ### 2. POST /api/evaluations/comment
-**Criar avaliação por comentário (APENAS GESTOR OU ADMIN)**
+**Criar avaliação por comentário (TODOS AUTENTICADOS) - ANÔNIMA**
 
 **Headers:**
 ```
@@ -97,14 +113,33 @@ Authorization: Bearer {token}
 **Request Body:**
 ```json
 {
-  "avaliadoId": "uuid-do-colaborador",
-  "comentario": "Colaborador muito dedicado e pontual. Demonstra grande interesse em aprender..."
+  "avaliadoId": "uuid-do-colaborador-ou-gestor",
+  "comentario": "Gestor muito dedicado e sempre disponível para ajudar a equipe...",
+  "anonima": true
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "avaliadoId": "uuid",
+    "tipoAvaliacao": "colaborador_para_gestor",
+    "comentario": "Gestor muito dedicado...",
+    "anonima": true,
+    "data": "2026-04-30T10:00:00.000Z"
+  },
+  "message": "Avaliação anônima criada com sucesso"
 }
 ```
 
 **Regras de Permissão:**
-- ✅ Apenas gestor ou admin pode criar
-- ❌ Colaborador NÃO pode avaliar outros
+- ✅ **Gestor** pode avaliar colaboradores (anônimo)
+- ✅ **Colaborador** pode avaliar gestores (anônimo)
+- ✅ **Admin** pode avaliar qualquer um
+- ❌ **Mesmo tipo** não pode avaliar entre si (gestor x gestor, colaborador x colaborador)
 
 ---
 
@@ -144,8 +179,9 @@ Authorization: Bearer {token}
 ```
 
 **Regras de Permissão:**
-- ✅ Apenas gestor ou admin pode criar
+- ✅ Apenas gestor ou admin pode criar Nine Box
 - ❌ Colaborador NÃO pode criar Nine Box
+- **Motivo**: Nine Box é uma ferramenta estratégica de gestão
 
 **Categorias Nine Box:**
 - Performance 3 + Potential 3 = "Superstar"
@@ -170,7 +206,7 @@ Authorization: Bearer {token}
 
 **Query Params:**
 ```
-?tipo=gestor
+?tipoAvaliacao=gestor_para_colaborador
 &avaliadoId=uuid
 &page=1
 &limit=10
@@ -193,9 +229,9 @@ Authorization: Bearer {token}
 ```
 
 **Regras de Permissão:**
-- ✅ Admin: vê todas as avaliações
-- ✅ Gestor: vê avaliações que criou + avaliações de sua equipe
-- ✅ Colaborador: vê apenas suas próprias avaliações recebidas
+- ✅ **Admin**: vê todas as avaliações
+- ✅ **Gestor**: vê avaliações que criou + avaliações recebidas + avaliações da sua equipe
+- ✅ **Colaborador**: vê avaliações que criou + avaliações recebidas
 
 ---
 
@@ -302,18 +338,16 @@ const evaluationController = new EvaluationController();
 // Todas as rotas requerem autenticação
 router.use(authMiddleware);
 
-// Criar avaliação tradicional (APENAS GESTOR OU ADMIN)
+// Criar avaliação tradicional (TODOS AUTENTICADOS - validação no service)
 router.post(
   '/',
-  isGestorOrAdminMiddleware,
   validate(createEvaluationSchema),
   (req, res, next) => evaluationController.create(req, res, next)
 );
 
-// Criar avaliação por comentário (APENAS GESTOR OU ADMIN)
+// Criar avaliação por comentário (TODOS AUTENTICADOS - validação no service)
 router.post(
   '/comment',
-  isGestorOrAdminMiddleware,
   validate(createCommentEvaluationSchema),
   (req, res, next) => evaluationController.createComment(req, res, next)
 );
@@ -359,7 +393,6 @@ router.get(
 // Atualizar avaliação (validação de permissão no service)
 router.put(
   '/:id',
-  isGestorOrAdminMiddleware,
   validate(createEvaluationSchema),
   (req, res, next) => evaluationController.update(req, res, next)
 );
@@ -367,7 +400,6 @@ router.put(
 // Deletar avaliação (validação de permissão no service)
 router.delete(
   '/:id',
-  isGestorOrAdminMiddleware,
   (req, res, next) => evaluationController.delete(req, res, next)
 );
 
@@ -376,58 +408,151 @@ export default router;
 
 ### Validações no Service
 
-**IMPORTANTE**: Além dos middlewares nas rotas, você deve validar permissões no service para operações sensíveis:
+**IMPORTANTE**: Sistema de avaliações anônimas - avaliadorId é mantido internamente mas não exposto:
 
 ```javascript
 // evaluation.service.js
-import { AppError } from '../../utils/errors.js';
 
 /**
- * Atualizar avaliação
+ * Criar avaliação tradicional (anônima)
  */
-async update(id, data, userId, userTipo) {
-  // Buscar avaliação
-  const evaluation = await this.evaluationRepository.findById(id);
-  if (!evaluation) {
-    throw new AppError('Avaliação não encontrada', 404);
+async create(data, avaliadorId, avaliadorTipo) {
+  // Verificar se avaliado existe
+  const avaliado = await this.userRepository.findById(data.avaliadoId);
+  if (!avaliado) {
+    throw new AppError('Usuário avaliado não encontrado', 404);
   }
 
-  // Validar permissão
-  // Admin pode atualizar qualquer avaliação
-  // Gestor pode atualizar apenas avaliações que criou
-  if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
-    throw new AppError('Você não tem permissão para atualizar esta avaliação', 403);
+  // Verificar se não é autoavaliação (exceto admin)
+  if (avaliadorId === data.avaliadoId && avaliadorTipo !== 'admin') {
+    throw new AppError('Você não pode se autoavaliar', 403);
   }
 
-  // Atualizar
-  const updated = await this.evaluationRepository.update(id, data);
-  return updated;
+  // Validar tipo de avaliação baseado nos tipos de usuário
+  const tipoAvaliacao = this.determinarTipoAvaliacao(avaliadorTipo, avaliado.tipo);
+  
+  if (!tipoAvaliacao) {
+    throw new AppError('Tipo de avaliação não permitido entre estes usuários', 403);
+  }
+
+  // Verificar se já existe avaliação recente (opcional - evitar spam)
+  const avaliacaoRecente = await this.evaluationRepository.findRecentEvaluation(
+    avaliadorId, 
+    data.avaliadoId, 
+    30 // 30 dias
+  );
+  
+  if (avaliacaoRecente) {
+    throw new AppError('Você já avaliou este usuário recentemente', 403);
+  }
+
+  // Calcular média dos critérios (se houver)
+  let media = null;
+  if (data.criterios) {
+    const criteriosArray = Object.values(data.criterios);
+    media = parseFloat(
+      (criteriosArray.reduce((a, b) => a + b, 0) / criteriosArray.length).toFixed(1)
+    );
+  }
+
+  // Criar avaliação (anônima por padrão)
+  const evaluation = await this.evaluationRepository.create({
+    avaliadorId, // Salvo internamente
+    avaliadoId: data.avaliadoId,
+    tipoAvaliacao,
+    criterios: data.criterios || null,
+    media,
+    comentario: data.comentario || null,
+    anonima: data.anonima !== false // true por padrão
+  });
+
+  // Retornar sem avaliadorId (manter anonimato)
+  return this.sanitizeEvaluation(evaluation);
 }
 
 /**
- * Deletar avaliação
+ * Sanitizar avaliação (remover dados sensíveis para anonimato)
  */
-async delete(id, userId, userTipo) {
-  // Buscar avaliação
-  const evaluation = await this.evaluationRepository.findById(id);
-  if (!evaluation) {
-    throw new AppError('Avaliação não encontrada', 404);
+sanitizeEvaluation(evaluation, userTipo = null) {
+  const sanitized = { ...evaluation };
+  
+  // Remover avaliadorId para manter anonimato (exceto para admin)
+  if (userTipo !== 'admin' && evaluation.anonima) {
+    delete sanitized.avaliadorId;
+    delete sanitized.avaliador; // Remover relação também
   }
-
-  // Validar permissão
-  // Admin pode deletar qualquer avaliação
-  // Gestor pode deletar apenas avaliações que criou
-  if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
-    throw new AppError('Você não tem permissão para deletar esta avaliação', 403);
-  }
-
-  // Deletar
-  await this.evaluationRepository.delete(id);
-  return { message: 'Avaliação deletada com sucesso' };
+  
+  return sanitized;
 }
 
 /**
- * Buscar avaliação por ID
+ * Determinar tipo de avaliação baseado nos tipos de usuário
+ */
+determinarTipoAvaliacao(avaliadorTipo, avaliadoTipo) {
+  // Admin pode avaliar qualquer um
+  if (avaliadorTipo === 'admin') {
+    return 'avaliacao_360';
+  }
+
+  // Gestor avalia colaborador
+  if (avaliadorTipo === 'gestor' && avaliadoTipo === 'colaborador') {
+    return 'gestor_para_colaborador';
+  }
+
+  // Colaborador avalia gestor
+  if (avaliadorTipo === 'colaborador' && avaliadoTipo === 'gestor') {
+    return 'colaborador_para_gestor';
+  }
+
+  // Mesmo tipo não pode avaliar entre si (exceto admin)
+  return null;
+}
+
+/**
+ * Listar avaliações com filtros (respeitando anonimato)
+ */
+async findAll(filters, userId, userTipo) {
+  let evaluations;
+
+  // Admin vê todas (incluindo avaliadorId)
+  if (userTipo === 'admin') {
+    evaluations = await this.evaluationRepository.findAll(filters);
+    return {
+      evaluations: evaluations.map(e => this.sanitizeEvaluation(e, 'admin')),
+      pagination: filters.pagination
+    };
+  }
+
+  // Gestor vê: avaliações que criou + avaliações que recebeu + avaliações da equipe
+  if (userTipo === 'gestor') {
+    evaluations = await this.evaluationRepository.findAll({
+      ...filters,
+      $or: [
+        { avaliadorId: userId }, // Avaliações que criou
+        { avaliadoId: userId },  // Avaliações que recebeu
+        // TODO: Adicionar filtro para equipe do gestor
+      ]
+    });
+  } else {
+    // Colaborador vê: avaliações que criou + avaliações que recebeu
+    evaluations = await this.evaluationRepository.findAll({
+      ...filters,
+      $or: [
+        { avaliadorId: userId }, // Avaliações que criou (de gestores)
+        { avaliadoId: userId }   // Avaliações que recebeu (de gestores)
+      ]
+    });
+  }
+
+  // Sanitizar para manter anonimato
+  return {
+    evaluations: evaluations.map(e => this.sanitizeEvaluation(e, userTipo)),
+    pagination: filters.pagination
+  };
+}
+
+/**
+ * Buscar avaliação por ID (respeitando anonimato)
  */
 async findById(id, userId, userTipo) {
   const evaluation = await this.evaluationRepository.findById(id);
@@ -435,56 +560,132 @@ async findById(id, userId, userTipo) {
     throw new AppError('Avaliação não encontrada', 404);
   }
 
-  // Validar permissão
-  // Admin: vê qualquer avaliação
-  // Gestor: vê se criou ou se é da sua equipe
-  // Colaborador: vê apenas se for avaliação dele
-  if (userTipo === 'admin') {
-    return evaluation;
-  }
-
-  if (userTipo === 'gestor') {
-    // Gestor pode ver se criou ou se é da equipe dele
-    if (evaluation.avaliadorId === userId || evaluation.avaliadoId === userId) {
-      return evaluation;
-    }
-    // TODO: Verificar se o avaliado é da equipe do gestor
+  // Validar permissão de visualização
+  const canView = this.canViewEvaluation(evaluation, userId, userTipo);
+  if (!canView) {
     throw new AppError('Você não tem permissão para ver esta avaliação', 403);
   }
 
-  // Colaborador só vê suas próprias avaliações
-  if (evaluation.avaliadoId !== userId) {
-    throw new AppError('Você não tem permissão para ver esta avaliação', 403);
-  }
-
-  return evaluation;
+  // Retornar sanitizada
+  return this.sanitizeEvaluation(evaluation, userTipo);
 }
 
 /**
- * Listar avaliações com filtros
+ * Verificar se usuário pode ver a avaliação
  */
-async findAll(filters, userId, userTipo) {
-  // Admin vê todas
-  if (userTipo === 'admin') {
-    return this.evaluationRepository.findAll(filters);
+canViewEvaluation(evaluation, userId, userTipo) {
+  // Admin vê tudo
+  if (userTipo === 'admin') return true;
+
+  // Pode ver se foi o avaliador ou o avaliado
+  if (evaluation.avaliadorId === userId || evaluation.avaliadoId === userId) {
+    return true;
   }
 
-  // Gestor vê avaliações que criou + avaliações de sua equipe
-  if (userTipo === 'gestor') {
-    return this.evaluationRepository.findAll({
-      ...filters,
-      avaliadorId: userId // Por enquanto, apenas as que criou
-      // TODO: Adicionar filtro para equipe do gestor
-    });
+  // TODO: Gestor pode ver avaliações da sua equipe
+  
+  return false;
+}
+
+/**
+ * Atualizar avaliação (apenas criador ou admin)
+ */
+async update(id, data, userId, userTipo) {
+  const evaluation = await this.evaluationRepository.findById(id);
+  if (!evaluation) {
+    throw new AppError('Avaliação não encontrada', 404);
   }
 
-  // Colaborador vê apenas suas próprias avaliações
-  return this.evaluationRepository.findAll({
-    ...filters,
-    avaliadoId: userId
-  });
+  // Apenas o criador ou admin pode atualizar
+  if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
+    throw new AppError('Você só pode atualizar avaliações que criou', 403);
+  }
+
+  // Recalcular média se critérios foram alterados
+  if (data.criterios) {
+    const criteriosArray = Object.values(data.criterios);
+    data.media = parseFloat(
+      (criteriosArray.reduce((a, b) => a + b, 0) / criteriosArray.length).toFixed(1)
+    );
+  }
+
+  const updated = await this.evaluationRepository.update(id, data);
+  
+  // Retornar sanitizada
+  return this.sanitizeEvaluation(updated, userTipo);
+}
+
+/**
+ * Deletar avaliação (apenas criador ou admin)
+ */
+async delete(id, userId, userTipo) {
+  const evaluation = await this.evaluationRepository.findById(id);
+  if (!evaluation) {
+    throw new AppError('Avaliação não encontrada', 404);
+  }
+
+  // Apenas o criador ou admin pode deletar
+  if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
+    throw new AppError('Você só pode deletar avaliações que criou', 403);
+  }
+
+  await this.evaluationRepository.delete(id);
+  return { message: 'Avaliação deletada com sucesso' };
 }
 ```
+
+---
+
+## Sistema de Avaliações Anônimas
+
+### Como funciona
+
+**Para o usuário comum:**
+- ✅ Cria avaliação normalmente
+- ✅ Vê avaliações que recebeu
+- ❌ **NÃO vê** quem o avaliou
+- ❌ **NÃO vê** o `avaliadorId` nas respostas da API
+
+**Para o admin:**
+- ✅ Vê todas as avaliações
+- ✅ **VÊ** quem avaliou quem (auditoria)
+- ✅ Pode fazer avaliações não-anônimas
+
+### Implementação técnica
+
+```javascript
+// Resposta da API para usuário comum
+{
+  "id": "uuid",
+  "avaliadoId": "uuid-do-avaliado",
+  "tipoAvaliacao": "colaborador_para_gestor",
+  "criterios": {...},
+  "comentario": "Ótimo gestor",
+  "anonima": true,
+  "data": "2026-04-30T10:00:00.000Z"
+  // avaliadorId é OMITIDO
+}
+
+// Resposta da API para admin
+{
+  "id": "uuid",
+  "avaliadorId": "uuid-do-avaliador", // VISÍVEL para admin
+  "avaliadoId": "uuid-do-avaliado",
+  "tipoAvaliacao": "colaborador_para_gestor",
+  "criterios": {...},
+  "comentario": "Ótimo gestor",
+  "anonima": true,
+  "data": "2026-04-30T10:00:00.000Z"
+}
+```
+
+### Regras de anonimato
+
+1. **avaliadorId** sempre salvo no banco (controle interno)
+2. **avaliadorId** removido da resposta da API (exceto admin)
+3. **tipoAvaliacao** determinado automaticamente pelo sistema
+4. **Admin** pode ver tudo (auditoria e relatórios)
+5. **Usuários** só sabem o tipo da avaliação, não quem fez
 
 ---
 

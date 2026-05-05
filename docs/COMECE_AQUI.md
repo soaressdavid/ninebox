@@ -42,7 +42,7 @@ Frontend (HTML/CSS/JS)  ←→  Backend (Node.js API)  ←→  Banco (Supabase)
      ↓                           ↓                        ↓
 - Páginas HTML            - Endpoints REST           - Tabelas
 - JavaScript modules      - Autenticação JWT         - Relacionamentos
-- Validações             - Permissões               - Dados
+- Validações             - Avaliações anônimas      - Dados
 ```
 
 ### Backend: Arquitetura em camadas
@@ -54,21 +54,21 @@ HTTP Request
     ↓
 Controller (recebe, valida, responde)
     ↓
-Service (lógica de negócio, regras)
+Service (lógica de negócio, anonimato, regras)
     ↓
 Repository (acesso ao banco via Prisma)
     ↓
 Database (Supabase PostgreSQL)
 ```
 
-**Exemplo prático**:
+**Exemplo prático - Avaliação anônima**:
 ```javascript
-// 1. Controller recebe POST /api/users/login
-// 2. Valida email/senha com Joi
-// 3. Chama Service.login(email, senha)
-// 4. Service verifica senha, gera JWT
-// 5. Repository busca usuário no banco
-// 6. Retorna token + dados do usuário
+// 1. Controller recebe POST /api/evaluations
+// 2. Valida dados com Joi
+// 3. Service.create(data, avaliadorId, avaliadorTipo)
+// 4. Service determina tipo automaticamente
+// 5. Repository salva com avaliadorId (interno)
+// 6. Response remove avaliadorId (anonimato)
 ```
 
 ### Frontend: Módulos JavaScript
@@ -89,26 +89,26 @@ JavaScript Modules:
 ```
 ADMIN
 ├── Cadastrar/deletar usuários
-├── Ver tudo
+├── Ver tudo (incluindo quem avaliou quem)
 └── Acesso total
 
 GESTOR
-├── Avaliar colaboradores
+├── Avaliar colaboradores (anônimo)
 ├── Ver relatórios da equipe
 └── Criar Nine Box
 
 COLABORADOR
+├── Avaliar gestores (anônimo)
 ├── Ver próprio perfil
-├── Ver próprias avaliações
-└── Responder avaliações 180°
+└── Ver próprias avaliações
 ```
 
 ### Sistema de RA (Registro Acadêmico)
 
-- **O que é**: Identificador único de 7 dígitos (como CPF)
+- **O que é**: Identificador único de 5 a 10 caracteres (como CPF)
 - **Como funciona**: Cada pessoa já tem seu RA
 - **No cadastro**: Pessoa informa o RA dela
-- **Sistema valida**: 7 dígitos + não duplicado
+- **Sistema valida**: 5 a 10 caracteres + não duplicado
 - **Usado para**: Buscar usuários, identificação única
 
 ---

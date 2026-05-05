@@ -48,7 +48,7 @@ Cadastrar usuário novo (só admin pode)
 
 **Regras:**
 - Só admin cadastra
-- RA deve ter entre 5 e 15 caracteres
+- RA deve ter entre 5 e 10 caracteres
 - RA e email únicos
 - Não pode criar admin pela API
 - **IMPORTANTE**: Use ES Modules (`import/export`) ao invés de CommonJS (`require/module.exports`)
@@ -142,17 +142,19 @@ export { authMiddleware, isAdminMiddleware, isGestorOrAdminMiddleware };
 
 **Como funciona:**
 - Pessoa informa o RA dela no cadastro
-- Sistema valida se está no formato correto (5 a 15 caracteres)
+- Sistema valida se está no formato correto (5 a 10 caracteres)
 - Sistema checa se não tá duplicado
 - Pronto
 
 **Validação:**
 ```javascript
 ra: Joi.string()
-  .pattern(/^[0-9]{7}$/)
+  .min(5)
+  .max(10)
   .required()
   .messages({
-    'string.pattern.base': 'RA tem que ter 7 dígitos',
+    'string.min': 'RA deve ter no mínimo 5 caracteres',
+    'string.max': 'RA deve ter no máximo 10 caracteres',
     'any.required': 'RA é obrigatório'
   })
 ```
@@ -559,7 +561,7 @@ Qualquer dúvida, chama.
 
 **Regras**:
 - ✅ Apenas admin pode cadastrar
-- ✅ RA deve ter entre 5 e 15 caracteres
+- ✅ RA deve ter entre 5 e 10 caracteres
 - ✅ RA deve ser único
 - ✅ Email deve ser único
 - ❌ Não pode criar admin pela API
@@ -764,10 +766,10 @@ export { authMiddleware, isAdminMiddleware, isGestorOrAdminMiddleware };
 ## 🆔 Sistema de RA
 
 ### O que é RA?
-- **Registro Acadêmico**: número único de 7 dígitos que cada pessoa já possui
+- **Registro Acadêmico**: identificador único de 5 a 10 caracteres que cada pessoa já possui
 - É como um CPF - um identificador que a pessoa já tem
 - No cadastro, a pessoa informa o RA dela
-- Sistema valida se tem 7 dígitos e se não está duplicado
+- Sistema valida se tem entre 5 e 10 caracteres e se não está duplicado
 
 ### Validação (Joi)
 
@@ -777,10 +779,12 @@ import Joi from 'joi';
 
 const createUserSchema = Joi.object({
   ra: Joi.string()
-    .pattern(/^[0-9]{7}$/)
+    .min(5)
+    .max(10)
     .required()
     .messages({
-      'string.pattern.base': 'RA deve ter 7 dígitos numéricos',
+      'string.min': 'RA deve ter no mínimo 5 caracteres',
+      'string.max': 'RA deve ter no máximo 10 caracteres',
       'any.required': 'RA é obrigatório (use o RA real da pessoa)'
     }),
   nome: Joi.string().min(3).required(),
