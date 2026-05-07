@@ -186,6 +186,8 @@ async function listarTipos() {
   ];
 }
 
+
+
 module.exports = {
   listar,
   buscarPorId,
