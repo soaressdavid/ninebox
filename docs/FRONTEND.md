@@ -126,7 +126,7 @@ class API {
     return this.request(`/users/ra/${ra}`);
   }
 
-  async registerUser(userData) {
+  async register(userData) {
     return this.request('/users/register', {
       method: 'POST',
       body: JSON.stringify(userData),
@@ -289,8 +289,8 @@ const validators = {
   },
   
   ra(value) {
-    const normalized = String(value || '').trim();
-    return normalized.length >= 5 && normalized.length <= 10;
+    const trimmed = value.trim();
+    return trimmed.length >= 5 && trimmed.length <= 10;
   },
 };
 

@@ -70,7 +70,7 @@ A:
 ```javascript
 {
   userId: "uuid",
-  email: "usuario@eniac.edu.br",
+  email: "usuario@empresa.com",
   tipo: "admin", // ou "gestor" ou "colaborador"
   ra: "1000000"
 }
@@ -80,7 +80,7 @@ A:
 A: RA = Registro Acadêmico do ENIAC - cada pessoa já tem seu RA (como CPF)
 - Cada colaborador e gestor já tem seu RA
 - No cadastro, a pessoa informa o RA dela
-- Sistema valida o formato (5 a 10 caracteres) e se não está duplicado
+- Sistema valida o formato (5 a 10 caracteres alfanuméricos) e se não está duplicado
 - Admin também tem RA próprio
 - Sistema NÃO gera RA automaticamente
 
@@ -191,7 +191,7 @@ req.user = decoded; // decoded.tipo = 'admin' | 'gestor' | 'colaborador'
 ```
 
 **Q: Colaborador pode criar avaliação?**
-A: Sim. Colaborador autenticado pode avaliar gestor anonimamente. As regras de permissão são validadas no service.
+A: Não. Só gestor e admin.
 
 **Q: Gestor pode deletar usuário?**
 A: Não. Só admin.
@@ -228,13 +228,13 @@ if (userTipo !== 'admin' && evaluation.avaliadorId !== userId) {
 ## Sistema de RA
 
 **Q: O que é RA?**
-A: Registro Acadêmico do ENIAC - identificador único de 5 a 10 caracteres que cada pessoa já tem
+A: Registro Acadêmico do ENIAC - número único que cada pessoa já tem (entre 5 e 10 caracteres alfanuméricos)
 
 **Q: De onde vem o RA?**
 A: Cada colaborador e gestor do ENIAC já tem seu RA. É como um CPF - um número que a pessoa já possui. No cadastro, ela informa o RA dela.
 
 **Q: Sistema gera RA?**
-A: Não. A pessoa já tem o RA. Sistema só valida se ele tem entre 5 e 10 caracteres e se não está duplicado.
+A: Não. A pessoa já tem o RA. Sistema só valida se tem 7 dígitos e se não está duplicado.
 
 **Q: RA pode mudar?**
 A: Não. É único e imutável.
@@ -247,8 +247,8 @@ const raSchema = Joi.string()
   .max(10)
   .required()
   .messages({
-    'string.min': 'RA deve ter no mínimo 5 caracteres',
-    'string.max': 'RA deve ter no máximo 10 caracteres'
+    'string.min': 'RA deve ter entre 5 e 10 caracteres',
+    'string.max': 'RA deve ter entre 5 e 10 caracteres'
   });
 ```
 

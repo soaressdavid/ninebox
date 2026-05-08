@@ -38,11 +38,11 @@
 ### Visão geral do sistema
 
 ```
-Frontend (HTML/CSS/JS)  ←→  Backend (Node.js API)  ←→  Banco (Supabase)
+Frontend (HTML/CSS/JS)  ←→  Backend (Node.js API)  ←→  Banco (PostgreSQL)
      ↓                           ↓                        ↓
 - Páginas HTML            - Endpoints REST           - Tabelas
-- JavaScript modules      - Autenticação JWT         - Relacionamentos
-- Validações             - Avaliações anônimas      - Dados
+- JavaScript modules      - Auth HttpOnly Cookie    - Relacionamentos
+- Validações             - Permissões               - Dados
 ```
 
 ### Backend: Arquitetura em camadas
@@ -54,29 +54,29 @@ HTTP Request
     ↓
 Controller (recebe, valida, responde)
     ↓
-Service (lógica de negócio, anonimato, regras)
+Service (lógica de negócio, regras)
     ↓
 Repository (acesso ao banco via Prisma)
     ↓
 Database (Supabase PostgreSQL)
 ```
 
-**Exemplo prático - Avaliação anônima**:
+**Exemplo prático**:
 ```javascript
-// 1. Controller recebe POST /api/evaluations
-// 2. Valida dados com Joi
-// 3. Service.create(data, avaliadorId, avaliadorTipo)
-// 4. Service determina tipo automaticamente
-// 5. Repository salva com avaliadorId (interno)
-// 6. Response remove avaliadorId (anonimato)
+// 1. Controller recebe POST /api/users/login
+// 2. Valida email/senha com Joi
+// 3. Chama Service.login(email, senha)
+// 4. Service verifica senha, gera JWT
+// 5. Repository busca usuário no banco
+// 6. Controller retorna token em HttpOnly Cookie + dados do usuário
 ```
 
-### Frontend: Módulos JavaScript
+### Frontend: Módulos JavaScript (ES Modules)
 
 ```
 Páginas HTML
     ↓
-JavaScript Modules:
+JavaScript Modules (import/export):
 ├── api.js (chamadas HTTP)
 ├── auth.js (login/logout/permissões)
 ├── validators.js (validação de formulários)
@@ -84,31 +84,41 @@ JavaScript Modules:
 └── pages/ (lógica específica de cada página)
 ```
 
+**Exemplo de uso:**
+```javascript
+// Importar módulos
+import { usersApi } from '../js/api.js';
+import { showToast } from '../js/components/toast.js';
+
+// Exportar funções
+export function minhaFuncao() { ... }
+```
+
 ### Sistema de Permissões (3 níveis)
 
 ```
 ADMIN
 ├── Cadastrar/deletar usuários
-├── Ver tudo (incluindo quem avaliou quem)
+├── Ver tudo
 └── Acesso total
 
 GESTOR
-├── Avaliar colaboradores (anônimo)
+├── Avaliar colaboradores
 ├── Ver relatórios da equipe
 └── Criar Nine Box
 
 COLABORADOR
-├── Avaliar gestores (anônimo)
 ├── Ver próprio perfil
-└── Ver próprias avaliações
+├── Ver próprias avaliações
+└── Responder avaliações 180°
 ```
 
 ### Sistema de RA (Registro Acadêmico)
 
-- **O que é**: Identificador único de 5 a 10 caracteres (como CPF)
+- **O que é**: Identificador único alfanumérico (como CPF)
 - **Como funciona**: Cada pessoa já tem seu RA
-- **No cadastro**: Pessoa informa o RA dela
-- **Sistema valida**: 5 a 10 caracteres + não duplicado
+- **No cadastro**: Pessoa informa o RA dela (5 a 10 caracteres)
+- **Sistema valida**: 5-10 caracteres alfanuméricos + não duplicado
 - **Usado para**: Buscar usuários, identificação única
 
 ---
@@ -152,14 +162,41 @@ COLABORADOR
 
 ## Docs de apoio (opcional)
 
-- [`GUIA_COMPLETO.md`](../GUIA_COMPLETO.md) - Tutorial completo pra fazer do zero
 - [`backend/FAQ.md`](backend/FAQ.md) - Perguntas frequentes backend
 - [`frontend/FAQ.md`](frontend/FAQ.md) - Perguntas frequentes frontend
 - [`backend/SCHEMA.prisma`](backend/SCHEMA.prisma) - Schema do banco
 - [`backend/DIAGRAMAS.md`](backend/DIAGRAMAS.md) - Diagramas visuais
 - [`ATUALIZACOES.md`](ATUALIZACOES.md) - Registro de atualizações
 
-**Importante**: RA é como CPF - cada pessoa já tem o seu. No cadastro, a pessoa informa o RA dela.
+---
+
+## Funcionalidades Implementadas
+
+### Sistema de Validações
+- ✅ RA: 5-10 caracteres alfanuméricos
+- ✅ Email: .edu.br obrigatório
+- ✅ Senha: mínimo 6 caracteres
+- ✅ Nome: mínimo 3 caracteres
+
+### Sistema de Autenticação
+- ✅ **HttpOnly Cookies** para tokens JWT (segurança profissional)
+- ✅ Proteção contra XSS e CSRF
+- ✅ Logout seguro (limpa cookie no servidor)
+- ✅ Sessões automáticas (cookie enviado automaticamente)
+
+### Sistema de Avaliações
+- ✅ Avaliações 180° e 360° anônimas
+- ✅ Limite de 24 horas para edição/exclusão (admin sem limite)
+- ✅ Sistema de visibilidade por tipo de usuário
+- ✅ Exportação CSV com UTF-8 BOM
+
+### Sistema de Dados
+- ✅ Mock Mode com 33 usuários, 8 avaliações, 16 Nine Box
+- ✅ Persistência em localStorage
+- ✅ ES Modules (import/export)
+- ✅ Dark mode
+
+**Importante**: RA é como CPF - cada pessoa já tem o seu (5 a 10 caracteres alfanuméricos). No cadastro, a pessoa informa o RA dela. Email institucional (.edu.br) é obrigatório.
 
 ---
 
@@ -167,6 +204,6 @@ COLABORADOR
 
 **Backend**: Leia [`BACKEND.md`](BACKEND.md) → Leia doc do seu módulo → Configure ambiente → Code
 
-**Frontend**: Leia [`FRONTEND.md`](FRONTEND.md) → Leia doc da sua tarefa → Rode servidor → Code
+**Frontend**: Leia [`FRONTEND.md`](FRONTEND.md) → Leia doc da sua tarefa → Configure ambiente → Code
 
 Qualquer dúvida, chama no daily.

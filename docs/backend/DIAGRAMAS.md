@@ -43,7 +43,7 @@ Padrão: **Controller → Service → Repository**
 ```
 User
 ├── id (uuid)
-├── ra (string, 5 a 10 caracteres, único)
+├── ra (string, 7 dígitos, único)
 ├── nome
 ├── email (único)
 ├── senha (hash bcrypt)
@@ -54,13 +54,12 @@ User
 
 Evaluation
 ├── id
-├── tipoAvaliacao
 ├── avaliadorId → User
 ├── avaliadoId → User
+├── tipo
 ├── criterios (json)
 ├── media
 ├── comentario
-├── anonima
 └── data
 
 NineBox
@@ -98,18 +97,28 @@ Competency
 ### Colaborador (RA: 2022XXX)
 - Vê próprio perfil
 - Vê próprias avaliações
-- Avalia gestores anonimamente
 - Responde 180°
 
 ## Sistema de RA
 
-RA = Registro Acadêmico informado pela própria pessoa no cadastro
+RA = Registro Acadêmico (7 dígitos gerados automaticamente)
+
+```
+Admins:        1000001, 1000002, 1000003...
+Gestores:      2021001, 2021002, 2021003...
+Colaboradores: 2022001, 2022002, 2022003...
+```
+
+Formato: `TAAAANN`
+- T = Tipo (1=admin, 2=gestor/colaborador)
+- AAAA = Ano atual
+- NN = Sequencial (01, 02, 03...)
 
 Regras:
-- Cada pessoa já possui seu RA
+- Gerado automaticamente no cadastro
 - Único por usuário
 - Não pode mudar depois de criado
-- Validação: entre 5 e 10 caracteres
+- Validação: exatamente 7 dígitos numéricos
 
 ## Divisão de trabalho
 
@@ -119,7 +128,7 @@ Regras:
 - Middlewares de permissão
 - CRUD de usuários
 
-### Estagiário 2 - Evaluations (11 endpoints)
+### Estagiário 2 - Evaluations (10 endpoints)
 - Avaliações tradicionais
 - Nine Box
 - Estatísticas
@@ -146,16 +155,16 @@ DELETE /api/users/:id            [ADMIN]
 
 ### Evaluations
 ```
-POST   /api/evaluations                [AUTH - regra validada no service]
-POST   /api/evaluations/comment        [AUTH - regra validada no service]
+POST   /api/evaluations                [GESTOR/ADMIN]
+POST   /api/evaluations/comment        [GESTOR/ADMIN]
 POST   /api/evaluations/nine-box       [GESTOR/ADMIN]
 GET    /api/evaluations                [AUTH - filtrado]
 GET    /api/evaluations/:id            [AUTH - validado]
 GET    /api/evaluations/user/:userId   [AUTH - validado]
 GET    /api/evaluations/stats/:userId  [AUTH - validado]
 GET    /api/evaluations/nine-box       [AUTH - filtrado]
-PUT    /api/evaluations/:id            [AUTH - só criador/admin no service]
-DELETE /api/evaluations/:id            [AUTH - só criador/admin no service]
+PUT    /api/evaluations/:id            [GESTOR/ADMIN - só criador]
+DELETE /api/evaluations/:id            [GESTOR/ADMIN - só criador]
 ```
 
 ### Competencies
@@ -189,7 +198,7 @@ Legenda:
 ### 1. Middleware nas rotas
 ```javascript
 router.post('/', isAdminMiddleware, controller.create);
-router.post('/evaluations', authMiddleware, controller.create);
+router.post('/evaluations', isGestorOrAdminMiddleware, controller.create);
 ```
 
 ### 2. Validação no service
@@ -223,9 +232,9 @@ npm run dev
 
 Credenciais de teste:
 ```
-Admin:        admin@eniac.edu.br / admin123 (RA informado no seed)
-Gestor:       joao@eniac.edu.br / senha123 (RA informado no seed)
-Colaborador:  ana@eniac.edu.br / senha123 (RA informado no seed)
+Admin:        admin@empresa.com / admin123 (RA gerado automaticamente)
+Gestor:       joao@empresa.com / senha123 (RA gerado automaticamente)
+Colaborador:  ana@empresa.com / senha123 (RA gerado automaticamente)
 ```
 
 ## Próximos passos

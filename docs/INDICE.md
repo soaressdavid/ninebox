@@ -12,6 +12,13 @@
 
 ---
 
+## 📖 Documentação Principal
+
+- [`COMECE_AQUI.md`](COMECE_AQUI.md) - **Ponto de entrada** (leia primeiro!)
+- [`ATUALIZACOES.md`](ATUALIZACOES.md) - Registro de mudanças
+
+---
+
 ## Backend
 
 ### Docs gerais
@@ -21,9 +28,9 @@
 - [`backend/DIAGRAMAS.md`](backend/DIAGRAMAS.md) - Diagramas
 
 ### Por estagiário
-- [`backend/ESTAGIARIO_1_USERS.md`](backend/ESTAGIARIO_1_USERS.md) - Usuários
-- [`backend/ESTAGIARIO_2_EVALUATIONS.md`](backend/ESTAGIARIO_2_EVALUATIONS.md) - Avaliações
-- [`backend/ESTAGIARIO_3_COMPETENCIES.md`](backend/ESTAGIARIO_3_COMPETENCIES.md) - Competências
+- [`backend/ESTAGIARIO_1_USERS.md`](backend/ESTAGIARIO_1_USERS.md) - Usuários (autenticação, RA)
+- [`backend/ESTAGIARIO_2_EVALUATIONS.md`](backend/ESTAGIARIO_2_EVALUATIONS.md) - Avaliações (Nine Box)
+- [`backend/ESTAGIARIO_3_COMPETENCIES.md`](backend/ESTAGIARIO_3_COMPETENCIES.md) - Competências (relatórios)
 
 ---
 
@@ -34,8 +41,8 @@
 - [`frontend/FAQ.md`](frontend/FAQ.md) - Perguntas frequentes
 
 ### Por estagiário
-- [`frontend/ESTAGIARIO_1_INFRAESTRUTURA.md`](frontend/ESTAGIARIO_1_INFRAESTRUTURA.md) - Infraestrutura
-- [`frontend/ESTAGIARIO_2_INTEGRACAO.md`](frontend/ESTAGIARIO_2_INTEGRACAO.md) - Integração
+- [`frontend/ESTAGIARIO_1_INFRAESTRUTURA.md`](frontend/ESTAGIARIO_1_INFRAESTRUTURA.md) - Infraestrutura (API, auth)
+- [`frontend/ESTAGIARIO_2_INTEGRACAO.md`](frontend/ESTAGIARIO_2_INTEGRACAO.md) - Integração (CRUD, validações)
 
 ---
 
@@ -44,11 +51,10 @@
 ```
 docs/
 ├── INDICE.md                   # Este arquivo
-├── COMECE_AQUI.md              # Comece aqui
+├── COMECE_AQUI.md              # Ponto de entrada
 ├── BACKEND.md                  # Guia backend
 ├── FRONTEND.md                 # Guia frontend
-├── GUIA_COMPLETO.md            # Tutorial do zero
-├── ATUALIZACOES.md             # Atualizações
+├── ATUALIZACOES.md             # Registro de mudanças
 │
 ├── backend/
 │   ├── ESTAGIARIO_1_USERS.md
@@ -70,16 +76,16 @@ docs/
 
 ### Backend
 1. Ler [`BACKEND.md`](BACKEND.md)
-2. Configurar ambiente
-3. Ler doc do seu módulo
+2. Ler doc do seu módulo
+3. Configurar ambiente
 4. Implementar (Controller → Service → Repository)
 5. Testar no Postman
 6. Fazer PR
 
 ### Frontend
 1. Ler [`FRONTEND.md`](FRONTEND.md)
-2. Configurar servidor local
-3. Ler doc da sua tarefa
+2. Ler doc da sua tarefa
+3. Configurar ambiente
 4. Implementar módulos
 5. Testar no navegador
 6. Fazer PR
